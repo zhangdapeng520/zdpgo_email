@@ -40,16 +40,16 @@ var ErrMissingContentType = errors.New("No Content-Type found for MIME entity")
 // Email is the type used for email messages
 type Email struct {
 	ReplyTo     []string
-	From        string
-	To          []string
-	Bcc         []string
-	Cc          []string
-	Subject     string
-	Text        []byte // Plaintext message (optional)
-	HTML        []byte // Html message (optional)
-	Sender      string // override From as SMTP envelope sender (optional)
-	Headers     textproto.MIMEHeader
-	Attachments []*Attachment
+	From        string               // 发送者
+	To          []string             // 接收者
+	Bcc         []string             // 密送
+	Cc          []string             // 抄送
+	Subject     string               // 主题
+	Text        []byte               // Plaintext message (optional)
+	HTML        []byte               // Html message (optional)
+	Sender      string               // override From as SMTP envelope sender (optional)
+	Headers     textproto.MIMEHeader // 协议头
+	Attachments []*Attachment        // 附件
 	ReadReceipt []string
 }
 
@@ -261,7 +261,11 @@ func parseMIMEParts(hs textproto.MIMEHeader, b io.Reader) ([]*part, error) {
 // Attach is used to attach content from an io.Reader to the email.
 // Required parameters include an io.Reader, the desired filename for the attachment, and the Content-Type
 // The function will return the created Attachment for reference, as well as nil for the error, if successful.
+// @param r：输入流
+// @param filename：文件名，不包含后缀
+// @param c：文件名，不包含后缀
 func (e *Email) Attach(r io.Reader, filename string, c string) (a *Attachment, err error) {
+	fmt.Println("c是什么：", c)
 	var buffer bytes.Buffer
 	if _, err = io.Copy(&buffer, r); err != nil {
 		return
@@ -276,19 +280,29 @@ func (e *Email) Attach(r io.Reader, filename string, c string) (a *Attachment, e
 	return at, nil
 }
 
-// AttachFile is used to attach content to the email.
-// It attempts to open the file referenced by filename and, if successful, creates an Attachment.
+// AttachFile 用来给邮件内容添加附件
+// @param filename 文件名，一般是相对路径
+// 如果文件能够引用成功，就创建一个Attachment附件对象
 // This Attachment is then appended to the slice of Email.Attachments.
 // The function will then return the Attachment for reference, as well as nil for the error, if successful.
 func (e *Email) AttachFile(filename string) (a *Attachment, err error) {
+	// 打开文件
 	f, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
+	// 根据文件后缀获取文件类型的后缀
+	// TODO: 弄清楚这个是什么
 	ct := mime.TypeByExtension(filepath.Ext(filename))
+	fmt.Println("文件后缀。。。1", ct)
+	fmt.Println("文件后缀。。。2", filepath.Ext(filename))
+
+	// 获取文件名，不包含后缀
 	basename := filepath.Base(filename)
+
+	// 邮箱，添加附件
 	return e.Attach(f, basename, ct)
 }
 
@@ -706,7 +720,9 @@ type Attachment struct {
 	HTMLRelated bool
 }
 
+// 设置邮件头
 func (at *Attachment) setDefaultHeaders() {
+	// 默认MIME类型
 	contentType := "application/octet-stream"
 	if len(at.ContentType) > 0 {
 		contentType = at.ContentType

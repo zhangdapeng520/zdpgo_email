@@ -13,38 +13,48 @@ import (
 	"time"
 )
 
+// 连接池的结构体
 type Pool struct {
-	addr          string
-	auth          smtp.Auth
-	max           int
-	created       int
-	clients       chan *client
-	rebuild       chan struct{}
-	mut           *sync.Mutex
-	lastBuildErr  *timestampedErr
-	closing       chan struct{}
-	tlsConfig     *tls.Config
-	helloHostname string
+	addr          string          // 该邮件服务器的smtp地址，例如smtp.qq.com:25
+	auth          smtp.Auth       // 邮件的权限校验，Go内置的方法，smtp.PlainAuth("", "邮箱地址@qq.com", "邮箱验证码", "smtp.qq.com"),
+	max           int             // 连接池的最大连接个数：？？？让 3 个协程去通道里面获取数据
+	created       int             // ??? 已经建立的连接个数
+	clients       chan *client    // 客户端列表：make(chan *client, count),
+	rebuild       chan struct{}   // ？？？ 要建立的连接
+	mut           *sync.Mutex     // !!! 重要：互斥锁
+	lastBuildErr  *timestampedErr // ??? 建立连接的时候，可能会失败。这个是最后一次失败的原因。
+	closing       chan struct{}   // ??? 要关闭的连接
+	tlsConfig     *tls.Config     // tls配置，一般传smtp.qq.com就可以
+	helloHostname string          // ??? 主机名称
 }
 
+// email客户端的结构体
 type client struct {
-	*smtp.Client
-	failCount int
+	*smtp.Client     // 客户端对象
+	failCount    int // ？？？ 允许失败（重试）次数
 }
 
+// 时间戳错误
 type timestampedErr struct {
-	err error
-	ts  time.Time
+	err error     // 错误
+	ts  time.Time // 时间戳
 }
 
-const maxFails = 4
+const maxFails = 4 // 最多失败次数
 
 var (
-	ErrClosed  = errors.New("pool closed")
-	ErrTimeout = errors.New("timed out")
+	ErrClosed  = errors.New("pool closed") // 连接池关闭错误
+	ErrTimeout = errors.New("timed out")   // 超时错误
 )
 
+// 新建连接池
+// @param address：该邮件服务器的smtp地址，例如smtp.qq.com:25
+// @param count： 多少个协程去通道里面获取数据
+// @param auth： 邮件的权限校验，Go内置的方法，smtp.PlainAuth("", "邮箱地址@qq.com", "邮箱验证码", "smtp.qq.com"),
+// @param opt_tlsConfig： tls加密参数
 func NewPool(address string, count int, auth smtp.Auth, opt_tlsConfig ...*tls.Config) (pool *Pool, err error) {
+
+	// 创建连接池对象
 	pool = &Pool{
 		addr:    address,
 		auth:    auth,
@@ -54,12 +64,17 @@ func NewPool(address string, count int, auth smtp.Auth, opt_tlsConfig ...*tls.Co
 		closing: make(chan struct{}),
 		mut:     &sync.Mutex{},
 	}
+
+	// 如果有tls配置
 	if len(opt_tlsConfig) == 1 {
 		pool.tlsConfig = opt_tlsConfig[0]
+
+		// 分割address，提取host：smtp.qq.com:25
 	} else if host, _, e := net.SplitHostPort(address); e != nil {
 		return nil, e
 	} else {
-		pool.tlsConfig = &tls.Config{ServerName: host}
+		// 自己去创建tls配置
+		pool.tlsConfig = &tls.Config{ServerName: host} // smtp.qq.com
 	}
 	return
 }
@@ -77,6 +92,7 @@ func (p *Pool) SetHelloHostname(h string) {
 	p.helloHostname = h
 }
 
+// 获取连接
 func (p *Pool) get(timeout time.Duration) *client {
 	select {
 	case c := <-p.clients:
@@ -260,6 +276,7 @@ shutdown:
 	c.Close()
 }
 
+// 获取email客户端失败
 func (p *Pool) failedToGet(startTime time.Time) error {
 	select {
 	case <-p.closing:
@@ -274,31 +291,39 @@ func (p *Pool) failedToGet(startTime time.Time) error {
 	return ErrTimeout
 }
 
+// 发送邮件
 // Send sends an email via a connection pulled from the Pool. The timeout may
 // be <0 to indicate no timeout. Otherwise reaching the timeout will produce
 // and error building a connection that occurred while we were waiting, or
 // otherwise ErrTimeout.
 func (p *Pool) Send(e *Email, timeout time.Duration) (err error) {
+	// 开始时间
 	start := time.Now()
+
+	// 获取一个email对象
 	c := p.get(timeout)
 	if c == nil {
 		return p.failedToGet(start)
 	}
 
+	// TODO：作用是什么
 	defer func() {
 		p.maybeReplace(err, c)
 	}()
 
+	// 获取email发送，密送，抄送
 	recipients, err := addressLists(e.To, e.Cc, e.Bcc)
 	if err != nil {
 		return
 	}
 
+	// 获取Email的主体内容
 	msg, err := e.Bytes()
 	if err != nil {
 		return
 	}
 
+	// 获取发送者邮件地址
 	from, err := emailOnly(e.From)
 	if err != nil {
 		return
@@ -307,20 +332,25 @@ func (p *Pool) Send(e *Email, timeout time.Duration) (err error) {
 		return
 	}
 
+	// 校验收件人，密送，抄送的邮件格式
 	for _, recip := range recipients {
 		if err = c.Rcpt(recip); err != nil {
 			return
 		}
 	}
 
+	// 获取要发送的数据
 	w, err := c.Data()
 	if err != nil {
 		return
 	}
+
+	// 发送消息
 	if _, err = w.Write(msg); err != nil {
 		return
 	}
 
+	// 关闭
 	err = w.Close()
 
 	return
