@@ -18,10 +18,10 @@ func main() {
 	em.To = []string{"lxgzhw@163.com"}
 
 	// 抄送
-	//em.Cc = []string{"xxx@qq.com"}
+	// em.Cc = []string{"xxx@qq.com"}
 
 	// 密送
-	//em.Bcc = []string{"xxx@qq.com"}
+	// em.Bcc = []string{"xxx@qq.com"}
 
 	//设置主题
 	em.Subject = "小魔童给你发邮件了"
