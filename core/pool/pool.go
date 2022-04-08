@@ -1,8 +1,9 @@
-package zdpgo_email
+package pool
 
 import (
 	"crypto/tls"
 	"errors"
+	"github.com/zhangdapeng520/zdpgo_email/core/email"
 	"io"
 	"net"
 	"net/mail"
@@ -296,7 +297,7 @@ func (p *Pool) failedToGet(startTime time.Time) error {
 // be <0 to indicate no timeout. Otherwise reaching the timeout will produce
 // and error building a connection that occurred while we were waiting, or
 // otherwise ErrTimeout.
-func (p *Pool) Send(e *Email, timeout time.Duration) (err error) {
+func (p *Pool) Send(e *email.Email, timeout time.Duration) (err error) {
 	// 开始时间
 	start := time.Now()
 
