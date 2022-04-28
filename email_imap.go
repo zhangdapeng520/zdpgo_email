@@ -636,15 +636,12 @@ func DialWithDialer(dialer Dialer, addr string) (*EmailImap, error) {
 	return c, nil
 }
 
-// DialTLS connects to an IMAP server using an encrypted connection.
+// DialTLS 使用加密连接连接IMAP服务器。
 func DialTLS(addr string, tlsConfig *tls.Config) (*EmailImap, error) {
 	return DialWithDialerTLS(new(net.Dialer), addr, tlsConfig)
 }
 
-// DialWithDialerTLS connects to an IMAP server using an encrypted connection
-// using dialer.Dial.
-//
-// Among other uses, this allows to apply a dial timeout.
+// DialWithDialerTLS 使用dialer.Dial使用加密连接连接IMAP服务器。在其他用途中，这允许应用拨号超时。
 func DialWithDialerTLS(dialer Dialer, addr string, tlsConfig *tls.Config) (*EmailImap, error) {
 	conn, err := dialer.Dial("tcp", addr)
 	if err != nil {
