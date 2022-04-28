@@ -1,0 +1,71 @@
+id: attack_id_email_gateway
+classid: attack_class_email_gateway
+type: email_gateway
+name: 邮件网关安全有效性测试
+desc: 邮件网关安全有效性测试
+attck:
+level: 高危
+
+# 发送邮件到目标邮箱中，邮件内容为钓鱼邮件，附件为恶意文件。
+# 完毕后登录到目标邮箱，判断邮件发送的到达率
+
+rule:
+  # 40
+  file:
+    - e60e767e33acf49c02568a79d9cbdadd.exe
+    - ebcdda10fdfaa38e417d25977546df4f.exe
+    - 95557a29de4b70a25ce62a03472be684.exe
+    - a635d6a35c2fc054042b6868ef52a0c3.exe
+    - e22638ce44a5f9faf9dd450438c1d492.exe
+    - 10e9e4295bbefe81f8f1c76e0f4821bc.exe
+    - 7d4ac74129b6b97caa5906ac68afcf34.exe
+    - db14bd3cb017e67fb12fb8ec0791b5d6.exe
+    - 99724fc3358d168c6f3f375ef1b15cbe.exe
+    - c60d1e4c93692a33d93d6c1b8380ab5d.exe
+    - 3e07ae209a0e347d05d48320dd6de668.exe
+    - e2d20322337d42a9bf8290d1f1c17366.exe
+    - 068e7d0320cf32ee0816525c88bb9c4f.exe
+    - d61cf834d0c2e244561b2e067725450b.exe
+    - f1a4e42ae0b161d22822699f4b170b9a.exe
+    - 99b17fcce8d54ea90ff5c0b9ef4fce73.exe
+    - 28c6bc044e78763a789638242f708f9e.exe
+    - 030c2dd5b0f24dd5717d4155eee414d2.exe
+    - 6bd4a78c50fafb1acaf06ff088808d06.exe
+    - 35c545e719d8d04771be35081626ce3b.exe
+    - 340349a5d4ba3e18caafe565c0296ac4.exe
+    - 1474bd3eda2e087560754241a0b92991.exe
+    - 61b9ee1cb660aa046a9d903e740f8e7d.exe
+    - 80402e15a81e4f513980857455eb5a9c.exe
+    - beceae2fdc4f7729a93e94ac2ccd78cc.exe
+    - 2789492573024e7e56b422944b8e4092.exe
+    - 59b18d6146a2aa066f661599c496090d.exe
+    - 0e5cde58af173fe7a35e6266f55c9091.exe
+    - 8b5c2cbf7d89be0a6eb66ecc29d9f5fd.exe
+    - 606d08caeebcfb67a227ef359eb6e3a7.exe
+    - d41d8cd98f00b204e9800998ecf8427e.exe
+    - 5f3eaca685e5a4dfe43d6806f0dd0cbe.exe
+    - 915178156c8caa25b548484c97dd19c1.exe
+    - 36fd5e09c417c767a952b4609d73a54b.exe
+    - 2391109c40ccb0f982b86af86cfbc900.exe
+    - ff5e1f27193ce51eec318714ef038bef.exe
+    - e6f375d351980333c9154770bcc3f400.doc
+    - 96683e60c506266efed0d53850beb24e.doc
+    - 002c4c4ab64bc1fec1a19f9c697e71d3.doc
+    - e429025707d8af0054361e7f9bb20767.doc
+
+
+    # 10
+  domain:
+    - www.acordecomcredlcrd.com
+    - terbangjauh.xyz
+    - dnfcc.cc
+    - metamaskt.vip
+    - www.microsoft-updateserver.cf
+    - steam-gift-codes.com
+    - sleammcommunnity.ru
+    - enter-me.xyz
+    - topexpertshop.com
+    - wingames2015.com
+
+
+

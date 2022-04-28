@@ -563,7 +563,7 @@ func (e *Email) parseSender() (string, error) {
 	}
 }
 
-// SendWithTLS sends an email over tls with an optional TLS config.
+// SendWithTLS sends an email over tls with an optional TLS secret.
 //
 // The TLS Config is helpful if you need to connect to a host that is used an untrusted
 // certificate.
@@ -635,7 +635,7 @@ func (e *Email) SendWithTLS(addr string, a smtp.Auth, t *tls.Config) error {
 	return c.Quit()
 }
 
-// SendWithStartTLS sends an email over TLS using STARTTLS with an optional TLS config.
+// SendWithStartTLS sends an email over TLS using STARTTLS with an optional TLS secret.
 //
 // The TLS Config is helpful if you need to connect to a host that is used an untrusted
 // certificate.
