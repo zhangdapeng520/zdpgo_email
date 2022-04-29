@@ -7,6 +7,7 @@ import (
 	"mime"
 	"net/smtp"
 	"os"
+	"strings"
 )
 
 /*
@@ -111,6 +112,37 @@ func (e *EmailSmtp) SendHtmlAndAttach(title, content, attach string, emails ...s
 // @param attach 附件
 func (e *EmailSmtp) SendTextAndAttach(title, content, attach string, emails ...string) {
 	e.SendEmail(title, content, attach, false, emails, nil, nil)
+}
+
+// SendWithTag 通过标签发送邮件
+func (e *EmailSmtp) SendWithTag(tagKey, tagValue, emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) error {
+	if tagKey != "" {
+		tagArr := strings.Split(tagKey, "-")
+		if len(tagArr) != 3 {
+			return errors.New("key必须由两个“-”分割的字符组成")
+		} else if tagArr[0] != "X" {
+			return errors.New("Key的第一个字符必须是大写的X")
+		}
+		e.Config.HeaderTagName = tagKey
+	}
+	if tagValue != "" {
+		e.Config.HeaderTagName = tagValue
+	}
+	err := e.SendGoMail(emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) error {
+	err := e.SendWithTag("", "", emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // SendGoMail 使用gomail发送邮件

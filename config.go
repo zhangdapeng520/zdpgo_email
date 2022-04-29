@@ -17,11 +17,12 @@ type Config struct {
 
 // ConfigImap EmailImap的相关配置
 type ConfigImap struct {
-	Server        string `yaml:"server" json:"server" env:"server"`       // 服务器地址
-	Timeout       int    `yaml:"timeout" json:"timeout" env:"timeout"`    // 连接超时时间，默认30秒
-	Username      string `yaml:"username" json:"username" env:"username"` // 用户名
-	Password      string `yaml:"password" json:"password" env:"password"` // 密码
-	HeaderTagName string `yaml:"header_tag_name" json:"header_tag_name"`  // 请求头标记名
+	Server         string `yaml:"server" json:"server" env:"server"`        // 服务器地址
+	Timeout        int    `yaml:"timeout" json:"timeout" env:"timeout"`     // 连接超时时间，默认30秒
+	Username       string `yaml:"username" json:"username" env:"username"`  // 用户名
+	Password       string `yaml:"password" json:"password" env:"password"`  // 密码
+	HeaderTagName  string `yaml:"header_tag_name" json:"header_tag_name"`   // 请求头标记名
+	HeaderTagValue string `yaml:"header_tag_value" json:"header_tag_value"` // 请求头标记默认值
 }
 
 // 校验配置

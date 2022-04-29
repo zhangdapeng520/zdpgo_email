@@ -739,7 +739,10 @@ func NewEmailImapWithConfig(config ConfigImap) (e *EmailImap, err error) {
 
 	// 配置
 	if config.HeaderTagName == "" {
-		config.HeaderTagName = "zdpgo_email"
+		config.HeaderTagName = "X-ZdpgoEmail-Auther"
+	}
+	if config.HeaderTagValue == "" {
+		config.HeaderTagValue = "zhangdapeng520"
 	}
 	e.Config = &config
 

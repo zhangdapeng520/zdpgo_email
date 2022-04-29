@@ -29,17 +29,14 @@ func main() {
 
 	// 要测试的内容
 	fileters := []zdpgo_email.PreFilter{
-		{From: "1156956636@qq.com", SentSince: "2022-04-07", HeaderTagValue: "zhangdapeng520"},
-		{From: "1156956636@qq.com", SentSince: "2022-04-07"},
+		{From: "1156956636@qq.com", SentSince: "2022-04-29"},
 		{From: "1156956636@qq.com"},
-		{From: "1156956636@qq.com", HeaderTagValue: "zhangdapeng520"},
 	}
 
 	// 进行测试
-	postFilter := zdpgo_email.PostFilter{}
 	for _, preFilter := range fileters {
 		fmt.Println("开始测试：", preFilter)
-		searchResults, err := c.SearchBF(&preFilter, &postFilter)
+		searchResults, err := c.SearchByDefaultTag(preFilter.From, preFilter.SentSince)
 		if err != nil {
 			fmt.Println(err)
 		} else if len(searchResults) > 0 {
