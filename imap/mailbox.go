@@ -49,7 +49,7 @@ const (
 	DraftsAttr = "\\Drafts"
 	// This mailbox presents all messages marked in some way as "important".
 	FlaggedAttr = "\\Flagged"
-	// This mailbox is where messages deemed to be junk mail are held.
+	// This mailbox is where messages deemed to be junk mail1 are held.
 	JunkAttr = "\\Junk"
 	// This mailbox is used to hold copies of messages that have been sent.
 	SentAttr = "\\Sent"

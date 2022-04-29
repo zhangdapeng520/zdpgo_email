@@ -104,7 +104,7 @@ func TestFetchBodySection(t *testing.T) {
 
 			header, err := textproto.ReadHeader(bufferedBody)
 			if err != nil {
-				t.Fatal("Expected no error while reading mail, got:", err)
+				t.Fatal("Expected no error while reading mail1, got:", err)
 			}
 
 			section, err := imap.ParseBodySectionName(imap.FetchItem(test.section))
@@ -170,7 +170,7 @@ func TestFetchBodySection_NonMultipart(t *testing.T) {
 
 			header, err := textproto.ReadHeader(bufferedBody)
 			if err != nil {
-				t.Fatal("Expected no error while reading mail, got:", err)
+				t.Fatal("Expected no error while reading mail1, got:", err)
 			}
 
 			section, err := imap.ParseBodySectionName(imap.FetchItem(test.section))

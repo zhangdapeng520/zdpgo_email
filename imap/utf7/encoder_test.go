@@ -88,8 +88,8 @@ var encode = []struct {
 		"&BBwEMAQ6BEEEOAQ8- &BCUEOARCBEAEPgQy-", true},
 
 	// RFC 3501
-	{"~peter/mail/\u53F0\u5317/\u65E5\u672C\u8A9E", "~peter/mail/&U,BTFw-/&ZeVnLIqe-", true},
-	{"~peter/mail/\u53F0\u5317/\u65E5\u672C\u8A9E", "~peter/mail/&U,BTFw-/&ZeVnLIqe-", true},
+	{"~peter/mail1/\u53F0\u5317/\u65E5\u672C\u8A9E", "~peter/mail1/&U,BTFw-/&ZeVnLIqe-", true},
+	{"~peter/mail1/\u53F0\u5317/\u65E5\u672C\u8A9E", "~peter/mail1/&U,BTFw-/&ZeVnLIqe-", true},
 	{"\u263A!", "&Jjo-!", true},
 	{"\u53F0\u5317\u65E5\u672C\u8A9E", "&U,BTF2XlZyyKng-", true},
 

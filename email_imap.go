@@ -641,8 +641,8 @@ func DialTLS(addr string, tlsConfig *tls.Config) (*EmailImap, error) {
 	return DialWithDialerTLS(new(net.Dialer), addr, tlsConfig)
 }
 
-// NewEmailImageWithServer 根据邮件服务器地址，创建邮件Imap对象
-func NewEmailImageWithServer(addr string, tlsConfig *tls.Config) (e *EmailImap, err error) {
+// NewEmailImapWithServer 根据邮件服务器地址，创建邮件Imap对象
+func NewEmailImapWithServer(addr string, tlsConfig *tls.Config) (e *EmailImap, err error) {
 	e, err = DialWithDialerTLS(new(net.Dialer), addr, tlsConfig)
 	return
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/zhangdapeng520/zdpgo_email/message"
 )
 
-// Address represents a single mail address.
+// Address represents a single mail1 address.
 // The type alias ensures that a net/mail.Address can be used wherever an
 // Address is expected
 type Address = mail.Address

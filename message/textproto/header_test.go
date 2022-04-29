@@ -387,8 +387,8 @@ var formatHeaderFieldTests = []struct {
 	},
 	{
 		k:         "In-Reply-To",
-		v:         "<CAOzTU0ikmAnr1ebhLEfks2crdHcotR-cXeJ-7ySd4X4VJ-B2fg@mail.gmail.com>",
-		formatted: "In-Reply-To: <CAOzTU0ikmAnr1ebhLEfks2crdHcotR-cXeJ-7ySd4X4VJ-B2fg@mail.gmail.com>\r\n",
+		v:         "<CAOzTU0ikmAnr1ebhLEfks2crdHcotR-cXeJ-7ySd4X4VJ-B2fg@mail1.gmail.com>",
+		formatted: "In-Reply-To: <CAOzTU0ikmAnr1ebhLEfks2crdHcotR-cXeJ-7ySd4X4VJ-B2fg@mail1.gmail.com>\r\n",
 	},
 	{
 		k:         "Subject",

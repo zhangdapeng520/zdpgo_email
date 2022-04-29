@@ -87,7 +87,7 @@ func TestEmailWithHTMLAttachments(t *testing.T) {
 
 	b, err := e.Bytes()
 	if err != nil {
-		t.Fatal("Could not serialize e-mail:", err)
+		t.Fatal("Could not serialize e-mail1:", err)
 	}
 
 	// Print the bytes for ocular validation and make sure no errors.
@@ -153,7 +153,7 @@ func TestEmailWithHTMLAttachmentsHTMLOnly(t *testing.T) {
 
 	b, err := e.Bytes()
 	if err != nil {
-		t.Fatal("Could not serialize e-mail:", err)
+		t.Fatal("Could not serialize e-mail1:", err)
 	}
 
 	// Print the bytes for ocular validation and make sure no errors.

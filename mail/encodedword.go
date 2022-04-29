@@ -109,10 +109,10 @@ func Decode(encoding byte, text string) ([]byte, error) {
 	case 'B', 'b':
 		r, err := base64.StdEncoding.DecodeString(text)
 		//这个报错可忽略
-		if strings.HasPrefix(fmt.Sprintf("%s", err),"illegal base64 data at input byte"){
-			return r,nil
+		if strings.HasPrefix(fmt.Sprintf("%s", err), "illegal base64 data at input byte") {
+			return r, nil
 		}
-		return r,err
+		return r, err
 	case 'Q', 'q':
 		return QDecode(text)
 	default:

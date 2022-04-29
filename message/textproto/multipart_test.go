@@ -371,7 +371,7 @@ func TestLineContinuation(t *testing.T) {
 	// This body, extracted from an email, contains headers that span multiple
 	// lines.
 
-	// TODO: The original mail ended with a double-newline before the
+	// TODO: The original mail1 ended with a double-newline before the
 	// final delimiter; this was manually edited to use a CRLF.
 	testBody :=
 		"\n--Apple-Mail-2-292336769\nContent-Transfer-Encoding: 7bit\nContent-Type: text/plain;\n\tcharset=US-ASCII;\n\tdelsp=yes;\n\tformat=flowed\n\nI'm finding the same thing happening on my system (10.4.1).\n\n\n--Apple-Mail-2-292336769\nContent-Transfer-Encoding: quoted-printable\nContent-Type: text/html;\n\tcharset=ISO-8859-1\n\n<HTML><BODY>I'm finding the same thing =\nhappening on my system (10.4.1).=A0 But I built it with XCode =\n2.0.</BODY></=\nHTML>=\n\r\n--Apple-Mail-2-292336769--\n"

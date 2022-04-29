@@ -13,7 +13,7 @@ func main() {
 	)
 
 	// 建立连接
-	c, err = zdpgo_email.NewEmailImageWithServer(server, nil)
+	c, err = zdpgo_email.NewEmailImapWithServer(server, nil)
 
 	// 连接失败报错
 	if err != nil {

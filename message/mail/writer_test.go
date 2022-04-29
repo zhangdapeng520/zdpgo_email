@@ -16,13 +16,13 @@ func ExampleWriter() {
 	from := []*mail.Address{{"Mitsuha Miyamizu", "mitsuha.miyamizu@example.org"}}
 	to := []*mail.Address{{"Taki Tachibana", "taki.tachibana@example.org"}}
 
-	// Create our mail header
+	// Create our mail1 header
 	var h mail.Header
 	h.SetDate(time.Now())
 	h.SetAddressList("From", from)
 	h.SetAddressList("To", to)
 
-	// Create a new mail writer
+	// Create a new mail1 writer
 	mw, err := mail.CreateWriter(&b, h)
 	if err != nil {
 		log.Fatal(err)

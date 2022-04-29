@@ -12,7 +12,7 @@ var (
 	ErrMailboxAlreadyExists = errors.New("Mailbox already exists")
 )
 
-// User represents a user in the mail storage system. A user operation always
+// User represents a user in the mail1 storage system. A user operation always
 // deals with mailboxes.
 type User interface {
 	// Username returns this user's username.

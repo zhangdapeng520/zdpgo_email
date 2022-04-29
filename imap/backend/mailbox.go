@@ -6,7 +6,7 @@ import (
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 )
 
-// Mailbox represents a mailbox belonging to a user in the mail storage system.
+// Mailbox represents a mailbox belonging to a user in the mail1 storage system.
 // A mailbox operation always deals with messages.
 type Mailbox interface {
 	// Name returns this mailbox name.

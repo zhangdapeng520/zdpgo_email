@@ -2,6 +2,7 @@
 **/.vscode
 **/*.exe
 **/log
+**/tmp
 **/secret
 **/logs
 **/*.log

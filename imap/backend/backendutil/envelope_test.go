@@ -26,7 +26,7 @@ var testEnvelope = &imap.Envelope{
 func TestFetchEnvelope(t *testing.T) {
 	hdr, err := textproto.ReadHeader(bufio.NewReader(strings.NewReader(testMailString)))
 	if err != nil {
-		t.Fatal("Expected no error while reading mail, got:", err)
+		t.Fatal("Expected no error while reading mail1, got:", err)
 	}
 
 	env, err := FetchEnvelope(hdr)

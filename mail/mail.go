@@ -3,13 +3,14 @@ package mail
 import (
 	"bytes"
 	"fmt"
-	"github.com/zhangdapeng520/zdpgo_email/message/mail"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/client"
+	"github.com/zhangdapeng520/zdpgo_email/message"
+	"github.com/zhangdapeng520/zdpgo_email/message/mail"
+	"gopkg.in/gomail.v2"
 	"io"
 	"io/ioutil"
 	"log"
-	"mail-go/utils"
 	"net/textproto"
 	"os"
 	"strings"
@@ -102,22 +103,22 @@ func SendMail(c gomail.SendCloser, sendConfig *SendConfig) error {
 	if sendConfig.From != "" {
 		m.SetHeader("From", sendConfig.From)
 	} else {
-		return utils.CommonError{Cause: "From not set"}
+		return CommonError{Cause: "From not set"}
 	}
 	if sendConfig.To != nil {
 		m.SetHeader("To", sendConfig.To...)
 	} else {
-		return utils.CommonError{Cause: "To not set"}
+		return CommonError{Cause: "To not set"}
 	}
 	if sendConfig.Subject != "" {
 		m.SetHeader("Subject", sendConfig.Subject)
 	} else {
-		return utils.CommonError{Cause: "Subject not set"}
+		return CommonError{Cause: "Subject not set"}
 	}
 	if sendConfig.Body != "" {
 		m.SetBody("text/html", sendConfig.Body)
 	} else {
-		return utils.CommonError{Cause: "Body not set"}
+		return CommonError{Cause: "Body not set"}
 	}
 
 	if sendConfig.Attachments != nil {
@@ -147,14 +148,14 @@ func charsetReader(charset string, input io.Reader) (io.Reader, error) {
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(input)
 		in := buf.Bytes()
-		b, err := utils.ConvertToUTF8(in, charset)
+		b, err := ConvertToUTF8(in, charset)
 		if err != nil {
 			return nil, err
 		}
 		r := bytes.NewReader(b)
 		return r, nil
 	}
-	return nil, utils.CommonError{Cause: "不支持的编码处理"}
+	return nil, CommonError{Cause: "不支持的编码处理"}
 }
 
 // MailDecodeHeader 自行处理strHeader，类似=?GB2312?B?1tDOxLi9vP6y4srU?=
@@ -209,7 +210,7 @@ func RecvSearch(c *client.Client, bf *PreFilter, af *PostFilter) ([]MailMessage,
 
 	if mbox.Messages == 0 {
 		log.Println("No message in mailbox")
-		return searchResults, utils.CommonError{Cause: "No message in mailbox"}
+		return searchResults, CommonError{Cause: "No message in mailbox"}
 	}
 
 	criteria := imap.NewSearchCriteria()
@@ -267,7 +268,7 @@ func RecvSearch(c *client.Client, bf *PreFilter, af *PostFilter) ([]MailMessage,
 
 	if len(uids) == 0 {
 		log.Println("uids is null")
-		return searchResults, utils.CommonError{Cause: "uids is null"}
+		return searchResults, CommonError{Cause: "uids is null"}
 	}
 
 	seqset := new(imap.SeqSet)
@@ -288,13 +289,13 @@ outLoop:
 	for msg := range messages {
 		if msg == nil {
 			log.Println("Server didn't returned message")
-			return searchResults, utils.CommonError{Cause: "Server didn't returned message"}
+			return searchResults, CommonError{Cause: "Server didn't returned message"}
 		}
 
 		r := msg.GetBody(&section)
 		if r == nil {
 			log.Println("Server didn't returned message body")
-			return searchResults, utils.CommonError{Cause: "Server didn't returned message body"}
+			return searchResults, CommonError{Cause: "Server didn't returned message body"}
 		}
 
 		// Create a new mailTest reader
@@ -397,8 +398,8 @@ outLoop:
 
 			bodyBytes, _ := ioutil.ReadAll(p.Body)
 			// 尝试编码转换
-			if utils.IsGBK(bodyBytes) {
-				bodyBytes, err = utils.ConvertToUTF8(bodyBytes, "gbk")
+			if IsGBK(bodyBytes) {
+				bodyBytes, err = ConvertToUTF8(bodyBytes, "gbk")
 				if err != nil {
 					log.Println(err)
 				}

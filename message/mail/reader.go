@@ -8,7 +8,7 @@ import (
 	"github.com/zhangdapeng520/zdpgo_email/message"
 )
 
-// A PartHeader is a mail part header. It contains convenience functions to get
+// A PartHeader is a mail1 part header. It contains convenience functions to get
 // and set header fields.
 type PartHeader interface {
 	// Add adds the key, value pair to the header.
@@ -23,14 +23,14 @@ type PartHeader interface {
 	Set(key, value string)
 }
 
-// A Part is either a mail text or an attachment. Header is either a InlineHeader
+// A Part is either a mail1 text or an attachment. Header is either a InlineHeader
 // or an AttachmentHeader.
 type Part struct {
 	Header PartHeader
 	Body   io.Reader
 }
 
-// A Reader reads a mail message.
+// A Reader reads a mail1 message.
 type Reader struct {
 	Header Header
 
@@ -38,7 +38,7 @@ type Reader struct {
 	readers *list.List
 }
 
-// NewReader creates a new mail reader.
+// NewReader creates a new mail1 reader.
 func NewReader(e *message.Entity) *Reader {
 	mr := e.MultipartReader()
 	if mr == nil {
@@ -56,7 +56,7 @@ func NewReader(e *message.Entity) *Reader {
 	return &Reader{Header{e.Header}, e, l}
 }
 
-// CreateReader reads a mail header from r and returns a new mail reader.
+// CreateReader reads a mail1 header from r and returns a new mail1 reader.
 //
 // If the message uses an unknown transfer encoding or charset, CreateReader
 // returns an error that verifies message.IsUnknownCharset, but also returns a
@@ -70,7 +70,7 @@ func CreateReader(r io.Reader) (*Reader, error) {
 	return NewReader(e), err
 }
 
-// NextPart returns the next mail part. If there is no more part, io.EOF is
+// NextPart returns the next mail1 part. If there is no more part, io.EOF is
 // returned as error.
 //
 // The returned Part.Body must be read completely before the next call to
@@ -97,7 +97,7 @@ func (r *Reader) NextPart() (*Part, error) {
 			// This is a multipart part, read it
 			r.readers.PushBack(pmr)
 		} else {
-			// This is a non-multipart part, return a mail part
+			// This is a non-multipart part, return a mail1 part
 			mp := &Part{Body: p.Body}
 			t, _, _ := p.Header.ContentType()
 			disp, _, _ := p.Header.ContentDisposition()

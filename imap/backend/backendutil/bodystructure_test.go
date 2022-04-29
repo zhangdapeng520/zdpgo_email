@@ -62,7 +62,7 @@ func TestFetchBodyStructure(t *testing.T) {
 
 	header, err := textproto.ReadHeader(bufferedBody)
 	if err != nil {
-		t.Fatal("Expected no error while reading mail, got:", err)
+		t.Fatal("Expected no error while reading mail1, got:", err)
 	}
 
 	bs, err := FetchBodyStructure(header, bufferedBody, true)

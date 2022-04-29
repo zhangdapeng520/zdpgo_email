@@ -99,14 +99,14 @@ func (p *headerParser) parseAtomText(dot bool) (string, error) {
 	for {
 		r, size := utf8.DecodeRuneInString(p.s[i:])
 		if size == 1 && r == utf8.RuneError {
-			return "", fmt.Errorf("mail: invalid UTF-8 in atom-text: %q", p.s)
+			return "", fmt.Errorf("mail1: invalid UTF-8 in atom-text: %q", p.s)
 		} else if size == 0 || !isAtext(r, dot) {
 			break
 		}
 		i += size
 	}
 	if i == 0 {
-		return "", errors.New("mail: invalid string")
+		return "", errors.New("mail1: invalid string")
 	}
 
 	var atom string
@@ -141,14 +141,14 @@ func isMultibyte(r rune) bool {
 
 func (p *headerParser) parseNoFoldLiteral() (string, error) {
 	if !p.consume('[') {
-		return "", errors.New("mail: missing '[' in no-fold-literal")
+		return "", errors.New("mail1: missing '[' in no-fold-literal")
 	}
 
 	i := 0
 	for {
 		r, size := utf8.DecodeRuneInString(p.s[i:])
 		if size == 1 && r == utf8.RuneError {
-			return "", fmt.Errorf("mail: invalid UTF-8 in no-fold-literal: %q", p.s)
+			return "", fmt.Errorf("mail1: invalid UTF-8 in no-fold-literal: %q", p.s)
 		} else if size == 0 || !isDtext(r) {
 			break
 		}
@@ -158,7 +158,7 @@ func (p *headerParser) parseNoFoldLiteral() (string, error) {
 	lit, p.s = p.s[:i], p.s[i:]
 
 	if !p.consume(']') {
-		return "", errors.New("mail: missing ']' in no-fold-literal")
+		return "", errors.New("mail1: missing ']' in no-fold-literal")
 	}
 	return "[" + lit + "]", nil
 }
@@ -173,11 +173,11 @@ func isDtext(r rune) bool {
 
 func (p *headerParser) parseMsgID() (string, error) {
 	if !p.skipCFWS() {
-		return "", errors.New("mail: malformed parenthetical comment")
+		return "", errors.New("mail1: malformed parenthetical comment")
 	}
 
 	if !p.consume('<') {
-		return "", errors.New("mail: missing '<' in msg-id")
+		return "", errors.New("mail1: missing '<' in msg-id")
 	}
 
 	left, err := p.parseAtomText(true)
@@ -186,7 +186,7 @@ func (p *headerParser) parseMsgID() (string, error) {
 	}
 
 	if !p.consume('@') {
-		return "", errors.New("mail: missing '@' in msg-id")
+		return "", errors.New("mail1: missing '@' in msg-id")
 	}
 
 	var right string
@@ -201,17 +201,17 @@ func (p *headerParser) parseMsgID() (string, error) {
 	}
 
 	if !p.consume('>') {
-		return "", errors.New("mail: missing '>' in msg-id")
+		return "", errors.New("mail1: missing '>' in msg-id")
 	}
 
 	if !p.skipCFWS() {
-		return "", errors.New("mail: malformed parenthetical comment")
+		return "", errors.New("mail1: malformed parenthetical comment")
 	}
 
 	return left + "@" + right, nil
 }
 
-// A Header is a mail header.
+// A Header is a mail1 header.
 type Header struct {
 	message.Header
 }

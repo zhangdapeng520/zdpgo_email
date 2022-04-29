@@ -11,16 +11,16 @@ import (
 )
 
 func ExampleReader() {
-	// Let's assume r is an io.Reader that contains a mail.
+	// Let's assume r is an io.Reader that contains a mail1.
 	var r io.Reader
 
-	// Create a new mail reader
+	// Create a new mail1 reader
 	mr, err := mail.CreateReader(r)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Read each mail's part
+	// Read each mail1's part
 	for {
 		p, err := mr.NextPart()
 		if err == io.EOF {
@@ -43,7 +43,7 @@ func ExampleReader() {
 func testReader(t *testing.T, r io.Reader) {
 	mr, err := mail.CreateReader(r)
 	if err != nil {
-		t.Fatalf("mail.CreateReader(r) = %v", err)
+		t.Fatalf("mail1.CreateReader(r) = %v", err)
 	}
 	defer mr.Close()
 
@@ -164,7 +164,7 @@ func TestReader_nested(t *testing.T) {
 
 	mr, err := mail.CreateReader(r)
 	if err != nil {
-		t.Fatalf("mail.CreateReader(r) = %v", err)
+		t.Fatalf("mail1.CreateReader(r) = %v", err)
 	}
 	defer mr.Close()
 

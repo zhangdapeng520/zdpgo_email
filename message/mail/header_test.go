@@ -164,7 +164,7 @@ func TestHeader_CanUseNetMailAddress(t *testing.T) {
 
 	//sanity check that they types are identical
 	if !reflect.DeepEqual(netfrom, mailfrom) {
-		t.Error("[]*net/mail.Address differs from []*mail.Address")
+		t.Error("[]*net/mail1.Address differs from []*mail1.Address")
 	}
 
 	//roundtrip

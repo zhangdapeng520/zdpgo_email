@@ -33,13 +33,13 @@ func initAttachmentHeader(h *AttachmentHeader) {
 	}
 }
 
-// A Writer writes a mail message. A mail message contains one or more text
+// A Writer writes a mail1 message. A mail1 message contains one or more text
 // parts and zero or more attachments.
 type Writer struct {
 	mw *message.Writer
 }
 
-// CreateWriter writes a mail header to w and creates a new Writer.
+// CreateWriter writes a mail1 header to w and creates a new Writer.
 func CreateWriter(w io.Writer, header Header) (*Writer, error) {
 	header = header.Copy() // don't modify the caller's view
 	header.Set("Content-Type", "multipart/mixed")
@@ -52,7 +52,7 @@ func CreateWriter(w io.Writer, header Header) (*Writer, error) {
 	return &Writer{mw}, nil
 }
 
-// CreateInlineWriter writes a mail header to w. The mail will contain an
+// CreateInlineWriter writes a mail1 header to w. The mail1 will contain an
 // inline part, allowing to represent the same text in different formats.
 // Attachments cannot be included.
 func CreateInlineWriter(w io.Writer, header Header) (*InlineWriter, error) {
@@ -67,7 +67,7 @@ func CreateInlineWriter(w io.Writer, header Header) (*InlineWriter, error) {
 	return &InlineWriter{mw}, nil
 }
 
-// CreateSingleInlineWriter writes a mail header to w. The mail will contain a
+// CreateSingleInlineWriter writes a mail1 header to w. The mail1 will contain a
 // single inline part. The body of the part should be written to the returned
 // io.WriteCloser. Only one single inline part should be written, use
 // CreateWriter if you want multiple parts.
@@ -113,7 +113,7 @@ func (w *Writer) Close() error {
 	return w.mw.Close()
 }
 
-// InlineWriter writes a mail message's text.
+// InlineWriter writes a mail1 message's text.
 type InlineWriter struct {
 	mw *message.Writer
 }
