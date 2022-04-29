@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net"
 
-	"github.com/emersion/go-sasl"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/commands"
+	"github.com/zhangdapeng520/zdpgo_email/sasl"
 )
 
 // IMAP errors in Not Authenticated state.

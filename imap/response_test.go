@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/emersion/go-imap"
+	"github.com/zhangdapeng520/zdpgo_email/imap"
 )
 
 func TestResp_WriteTo(t *testing.T) {

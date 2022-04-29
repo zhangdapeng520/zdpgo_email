@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/emersion/go-sasl"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/backend"
 	"github.com/zhangdapeng520/zdpgo_email/imap/responses"
+	"github.com/zhangdapeng520/zdpgo_email/sasl"
 )
 
 // The minimum autologout duration defined in RFC 3501 section 5.4.

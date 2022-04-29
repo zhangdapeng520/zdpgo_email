@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net"
 
-	"github.com/emersion/go-sasl"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/commands"
 	"github.com/zhangdapeng520/zdpgo_email/imap/responses"
+	"github.com/zhangdapeng520/zdpgo_email/sasl"
 )
 
 var (

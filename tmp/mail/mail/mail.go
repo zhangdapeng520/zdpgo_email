@@ -3,7 +3,7 @@ package mail
 import (
 	"bytes"
 	"fmt"
-	"github.com/emersion/go-message/mail"
+	"github.com/zhangdapeng520/zdpgo_email/message/mail"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/client"
 	"io"

@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/emersion/go-sasl"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
+	"github.com/zhangdapeng520/zdpgo_email/sasl"
 )
 
 func TestClient_StartTLS(t *testing.T) {

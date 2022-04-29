@@ -2,8 +2,8 @@ package responses
 
 import (
 	"encoding/base64"
-	"github.com/emersion/go-sasl"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
+	"github.com/zhangdapeng520/zdpgo_email/sasl"
 )
 
 // An AUTHENTICATE response.
