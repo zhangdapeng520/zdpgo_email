@@ -8,7 +8,7 @@ import (
 	"mime/quotedprintable"
 	"strings"
 
-	"github.com/emersion/go-textwrapper"
+	"github.com/zhangdapeng520/zdpgo_email/textwrapper"
 )
 
 type UnknownEncodingError struct {
