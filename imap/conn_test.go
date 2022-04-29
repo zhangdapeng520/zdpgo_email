@@ -1,4 +1,4 @@
-package imap_test
+package imap
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/zhangdapeng520/zdpgo_email/imap"
+	"github.com/emersion/go-imap"
 )
 
 func TestNewConn(t *testing.T) {

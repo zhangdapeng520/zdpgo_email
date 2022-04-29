@@ -13,7 +13,7 @@ func main() {
 	)
 
 	// 建立连接
-	c, err = zdpgo_email.DialTLS(server, nil)
+	c, err = zdpgo_email.NewEmailImageWithServer(server, nil)
 
 	// 连接失败报错
 	if err != nil {
@@ -28,7 +28,7 @@ func main() {
 	log.Println("登录成功")
 
 	// 创建20个收件箱
-	mailboxes := make(chan *imap.MailboxInfo, 20)
+	mailboxes := make(chan *imap.MailboxInfo, 30)
 	go func() {
 		c.List("", "*", mailboxes)
 	}()

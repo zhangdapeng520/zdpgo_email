@@ -3,11 +3,9 @@ package mail
 import (
 	"bytes"
 	"fmt"
+	"github.com/emersion/go-message/mail"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/client"
-	"github.com/emersion/go-message"
-	"github.com/emersion/go-message/mail"
-	"gopkg.in/gomail.v2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -236,7 +234,7 @@ func RecvSearch(c *client.Client, bf *PreFilter, af *PostFilter) ([]MailMessage,
 			header.Add(UID_NAME, bf.Uid)
 			af.Uid = bf.Uid
 		}
-		log.Println("set search header:", header)
+		log.Println("set test header:", header)
 		criteria.Header = header
 	}
 
@@ -253,7 +251,7 @@ func RecvSearch(c *client.Client, bf *PreFilter, af *PostFilter) ([]MailMessage,
 		if err != nil {
 			return searchResults, err
 		}
-		log.Println("set search time: ", t)
+		log.Println("set test time: ", t)
 		criteria.SentSince = t
 		af.SentSince = bf.SentSince
 	}

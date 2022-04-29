@@ -1,14 +1,12 @@
-package imap_test
+package imap
 
 import (
 	"bytes"
 	"testing"
-
-	"github.com/zhangdapeng520/zdpgo_email/imap"
 )
 
 func TestCommand_Command(t *testing.T) {
-	cmd := &imap.Command{
+	cmd := &Command{
 		Tag:  "A001",
 		Name: "NOOP",
 	}
@@ -20,9 +18,9 @@ func TestCommand_Command(t *testing.T) {
 
 func TestCommand_WriteTo_NoArgs(t *testing.T) {
 	var b bytes.Buffer
-	w := imap.NewWriter(&b)
+	w := NewWriter(&b)
 
-	cmd := &imap.Command{
+	cmd := &Command{
 		Tag:  "A001",
 		Name: "NOOP",
 	}
@@ -37,9 +35,9 @@ func TestCommand_WriteTo_NoArgs(t *testing.T) {
 
 func TestCommand_WriteTo_WithArgs(t *testing.T) {
 	var b bytes.Buffer
-	w := imap.NewWriter(&b)
+	w := NewWriter(&b)
 
-	cmd := &imap.Command{
+	cmd := &Command{
 		Tag:       "A002",
 		Name:      "LOGIN",
 		Arguments: []interface{}{"username", "password"},
@@ -56,7 +54,7 @@ func TestCommand_WriteTo_WithArgs(t *testing.T) {
 func TestCommand_Parse_NoArgs(t *testing.T) {
 	fields := []interface{}{"a", "NOOP"}
 
-	cmd := &imap.Command{}
+	cmd := &Command{}
 
 	if err := cmd.Parse(fields); err != nil {
 		t.Fatal(err)
@@ -75,7 +73,7 @@ func TestCommand_Parse_NoArgs(t *testing.T) {
 func TestCommand_Parse_WithArgs(t *testing.T) {
 	fields := []interface{}{"a", "LOGIN", "username", "password"}
 
-	cmd := &imap.Command{}
+	cmd := &Command{}
 
 	if err := cmd.Parse(fields); err != nil {
 		t.Fatal(err)

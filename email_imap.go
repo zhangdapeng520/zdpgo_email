@@ -641,6 +641,12 @@ func DialTLS(addr string, tlsConfig *tls.Config) (*EmailImap, error) {
 	return DialWithDialerTLS(new(net.Dialer), addr, tlsConfig)
 }
 
+// NewEmailImageWithServer 根据邮件服务器地址，创建邮件Imap对象
+func NewEmailImageWithServer(addr string, tlsConfig *tls.Config) (e *EmailImap, err error) {
+	e, err = DialWithDialerTLS(new(net.Dialer), addr, tlsConfig)
+	return
+}
+
 // DialWithDialerTLS 使用dialer.Dial使用加密连接连接IMAP服务器。在其他用途中，这允许应用拨号超时。
 func DialWithDialerTLS(dialer Dialer, addr string, tlsConfig *tls.Config) (*EmailImap, error) {
 	conn, err := dialer.Dial("tcp", addr)

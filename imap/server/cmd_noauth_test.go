@@ -3,19 +3,19 @@ package server_test
 import (
 	"bufio"
 	"crypto/tls"
+	"github.com/zhangdapeng520/zdpgo_email"
 	"io"
 	"net"
 	"strings"
 	"testing"
 
-	"github.com/zhangdapeng520/zdpgo_email/imap/internal"
 	"github.com/zhangdapeng520/zdpgo_email/imap/server"
 )
 
 func testServerTLS(t *testing.T) (s *server.Server, c net.Conn, scanner *bufio.Scanner) {
 	s, c, scanner = testServerGreeted(t)
 
-	cert, err := tls.X509KeyPair(internal.LocalhostCert, internal.LocalhostKey)
+	cert, err := tls.X509KeyPair(zdpgo_email.LocalhostCert, zdpgo_email.LocalhostKey)
 	if err != nil {
 		t.Fatal(err)
 	}

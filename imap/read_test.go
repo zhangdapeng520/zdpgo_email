@@ -1,4 +1,4 @@
-package imap_test
+package imap
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/zhangdapeng520/zdpgo_email/imap"
+	"github.com/emersion/go-imap"
 )
 
 func TestParseNumber(t *testing.T) {

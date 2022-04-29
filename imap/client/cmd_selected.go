@@ -126,7 +126,7 @@ func (c *Client) search(uid bool, criteria *imap.SearchCriteria) (ids []uint32, 
 }
 
 // Search searches the mailbox for messages that match the given searching
-// criteria. Searching criteria consist of one or more search keys. The response
+// criteria. Searching criteria consist of one or more test keys. The response
 // contains a list of message sequence IDs corresponding to those messages that
 // match the searching criteria. When multiple keys are specified, the result is
 // the intersection (AND function) of all the messages that match those keys.

@@ -250,7 +250,7 @@ func ExampleClient_Search() {
 		log.Fatal(err)
 	}
 
-	// Set search criteria
+	// Set test criteria
 	criteria := imap.NewSearchCriteria()
 	criteria.WithoutFlags = []string{imap.SeenFlag}
 	ids, err := c.Search(criteria)

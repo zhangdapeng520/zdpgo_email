@@ -2,19 +2,19 @@ package client
 
 import (
 	"crypto/tls"
+	"github.com/zhangdapeng520/zdpgo_email"
 	"io"
 	"testing"
 
 	"github.com/emersion/go-sasl"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
-	"github.com/zhangdapeng520/zdpgo_email/imap/internal"
 )
 
 func TestClient_StartTLS(t *testing.T) {
 	c, s := newTestClient(t)
 	defer s.Close()
 
-	cert, err := tls.X509KeyPair(internal.LocalhostCert, internal.LocalhostKey)
+	cert, err := tls.X509KeyPair(zdpgo_email.LocalhostCert, zdpgo_email.LocalhostKey)
 	if err != nil {
 		t.Fatal("cannot load test certificate:", err)
 	}

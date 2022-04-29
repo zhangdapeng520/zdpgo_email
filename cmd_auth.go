@@ -21,10 +21,9 @@ func (c *EmailImap) ensureAuthenticated() error {
 	return nil
 }
 
-// Select selects a mailbox so that messages in the mailbox can be accessed. Any
-// currently selected mailbox is deselected before attempting the new selection.
-// Even if the readOnly parameter is set to false, the server can decide to open
-// the mailbox in read-only mode.
+// Select 选择一个邮箱，以便可以访问该邮箱中的消息。
+// 在尝试新的选择之前，将取消当前选中的任何邮箱。
+// 即使readOnly参数设置为false，服务器也可以决定以只读模式打开邮箱。
 func (c *EmailImap) Select(name string, readOnly bool) (*imap.MailboxStatus, error) {
 	if err := c.ensureAuthenticated(); err != nil {
 		return nil, err
@@ -64,7 +63,7 @@ func (c *EmailImap) Select(name string, readOnly bool) (*imap.MailboxStatus, err
 	return mbox, nil
 }
 
-// Create creates a mailbox with the given name.
+// Create 创建具有给定名称的邮箱。
 func (c *EmailImap) Create(name string) error {
 	if err := c.ensureAuthenticated(); err != nil {
 		return err
@@ -81,7 +80,7 @@ func (c *EmailImap) Create(name string) error {
 	return status.Err()
 }
 
-// Delete permanently removes the mailbox with the given name.
+// Delete 永久删除具有给定名称的邮箱。
 func (c *EmailImap) Delete(name string) error {
 	if err := c.ensureAuthenticated(); err != nil {
 		return err
@@ -98,7 +97,7 @@ func (c *EmailImap) Delete(name string) error {
 	return status.Err()
 }
 
-// Rename changes the name of a mailbox.
+// Rename 更改邮箱的名称。
 func (c *EmailImap) Rename(existingName, newName string) error {
 	if err := c.ensureAuthenticated(); err != nil {
 		return err
@@ -116,8 +115,7 @@ func (c *EmailImap) Rename(existingName, newName string) error {
 	return status.Err()
 }
 
-// Subscribe adds the specified mailbox name to the server's set of "active" or
-// "subscribed" mailboxes.
+// Subscribe 将指定的邮箱名称添加到服务器的“活动”或“订阅”邮箱集。
 func (c *EmailImap) Subscribe(name string) error {
 	if err := c.ensureAuthenticated(); err != nil {
 		return err
@@ -134,8 +132,7 @@ func (c *EmailImap) Subscribe(name string) error {
 	return status.Err()
 }
 
-// Unsubscribe removes the specified mailbox name from the server's set of
-// "active" or "subscribed" mailboxes.
+// Unsubscribe 从服务器的“活动”或“订阅”邮箱集中删除指定的邮箱名称。
 func (c *EmailImap) Unsubscribe(name string) error {
 	if err := c.ensureAuthenticated(); err != nil {
 		return err
@@ -175,8 +172,7 @@ func (c *EmailImap) List(ref, name string, ch chan *imap.MailboxInfo) error {
 	return status.Err()
 }
 
-// Lsub returns a subset of names from the set of names that the user has
-// declared as being "active" or "subscribed".
+// Lsub 从用户声明为“活动”或“订阅”的名称集中返回名称的子集。
 func (c *EmailImap) Lsub(ref, name string, ch chan *imap.MailboxInfo) error {
 	defer close(ch)
 

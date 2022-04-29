@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/emersion/go-message"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 )
 
@@ -305,10 +304,10 @@ func TestMatch(t *testing.T) {
 		}
 
 		if test.res && !ok {
-			t.Errorf("Expected #%v to match search criteria", i+1)
+			t.Errorf("Expected #%v to match test criteria", i+1)
 		}
 		if !test.res && ok {
-			t.Errorf("Expected #%v not to match search criteria", i+1)
+			t.Errorf("Expected #%v not to match test criteria", i+1)
 		}
 	}
 }
@@ -387,21 +386,21 @@ func TestMatchIssue298Regression(t *testing.T) {
 		t.Fatal("Expected no error while matching entity, got:", err)
 	}
 	if ok1 {
-		t.Errorf("Expected message #1 to not match search criteria")
+		t.Errorf("Expected message #1 to not match test criteria")
 	}
 	ok2, err := Match(e2, 2, 102, time.Now(), nil, criteria)
 	if err != nil {
 		t.Fatal("Expected no error while matching entity, got:", err)
 	}
 	if !ok2 {
-		t.Errorf("Expected message #2 to match search criteria")
+		t.Errorf("Expected message #2 to match test criteria")
 	}
 	ok3, err := Match(e3, 3, 103, time.Now(), nil, criteria)
 	if err != nil {
 		t.Fatal("Expected no error while matching entity, got:", err)
 	}
 	if !ok3 {
-		t.Errorf("Expected message #3 to match search criteria")
+		t.Errorf("Expected message #3 to match test criteria")
 	}
 
 	// Search for body size < 17 ("SMALLER 17"), which should match messages #1 and #2
@@ -413,20 +412,20 @@ func TestMatchIssue298Regression(t *testing.T) {
 		t.Fatal("Expected no error while matching entity, got:", err)
 	}
 	if !ok1 {
-		t.Errorf("Expected message #1 to match search criteria")
+		t.Errorf("Expected message #1 to match test criteria")
 	}
 	ok2, err = Match(e2, 2, 102, time.Now(), nil, criteria)
 	if err != nil {
 		t.Fatal("Expected no error while matching entity, got:", err)
 	}
 	if !ok2 {
-		t.Errorf("Expected message #2 to match search criteria")
+		t.Errorf("Expected message #2 to match test criteria")
 	}
 	ok3, err = Match(e3, 3, 103, time.Now(), nil, criteria)
 	if err != nil {
 		t.Fatal("Expected no error while matching entity, got:", err)
 	}
 	if ok3 {
-		t.Errorf("Expected message #3 to not match search criteria")
+		t.Errorf("Expected message #3 to not match test criteria")
 	}
 }

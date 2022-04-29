@@ -1,55 +1,53 @@
-package imap_test
+package imap
 
 import (
 	"bytes"
 	"testing"
-
-	"github.com/zhangdapeng520/zdpgo_email/imap"
 )
 
 func TestStatusResp_WriteTo(t *testing.T) {
 	tests := []struct {
-		input    *imap.StatusResp
+		input    *StatusResp
 		expected string
 	}{
 		{
-			input: &imap.StatusResp{
+			input: &StatusResp{
 				Tag:  "*",
-				Type: imap.StatusRespOk,
+				Type: StatusRespOk,
 			},
 			expected: "* OK \r\n",
 		},
 		{
-			input: &imap.StatusResp{
+			input: &StatusResp{
 				Tag:  "*",
-				Type: imap.StatusRespOk,
+				Type: StatusRespOk,
 				Info: "LOGIN completed",
 			},
 			expected: "* OK LOGIN completed\r\n",
 		},
 		{
-			input: &imap.StatusResp{
+			input: &StatusResp{
 				Tag:  "42",
-				Type: imap.StatusRespBad,
+				Type: StatusRespBad,
 				Info: "Invalid arguments",
 			},
 			expected: "42 BAD Invalid arguments\r\n",
 		},
 		{
-			input: &imap.StatusResp{
+			input: &StatusResp{
 				Tag:  "a001",
-				Type: imap.StatusRespOk,
+				Type: StatusRespOk,
 				Code: "READ-ONLY",
 				Info: "EXAMINE completed",
 			},
 			expected: "a001 OK [READ-ONLY] EXAMINE completed\r\n",
 		},
 		{
-			input: &imap.StatusResp{
+			input: &StatusResp{
 				Tag:       "*",
-				Type:      imap.StatusRespOk,
+				Type:      StatusRespOk,
 				Code:      "CAPABILITY",
-				Arguments: []interface{}{imap.RawString("IMAP4rev1")},
+				Arguments: []interface{}{RawString("IMAP4rev1")},
 				Info:      "IMAP4rev1 service ready",
 			},
 			expected: "* OK [CAPABILITY IMAP4rev1] IMAP4rev1 service ready\r\n",
@@ -58,7 +56,7 @@ func TestStatusResp_WriteTo(t *testing.T) {
 
 	for i, test := range tests {
 		b := &bytes.Buffer{}
-		w := imap.NewWriter(b)
+		w := NewWriter(b)
 
 		if err := test.input.WriteTo(w); err != nil {
 			t.Errorf("Cannot write status #%v, got error: %v", i, err)
@@ -73,19 +71,19 @@ func TestStatusResp_WriteTo(t *testing.T) {
 }
 
 func TestStatus_Err(t *testing.T) {
-	status := &imap.StatusResp{Type: imap.StatusRespOk, Info: "All green"}
+	status := &StatusResp{Type: StatusRespOk, Info: "All green"}
 	if err := status.Err(); err != nil {
 		t.Error("OK status returned error:", err)
 	}
 
-	status = &imap.StatusResp{Type: imap.StatusRespBad, Info: "BAD!"}
+	status = &StatusResp{Type: StatusRespBad, Info: "BAD!"}
 	if err := status.Err(); err == nil {
 		t.Error("BAD status didn't returned error:", err)
 	} else if err.Error() != "BAD!" {
 		t.Error("BAD status returned incorrect error message:", err)
 	}
 
-	status = &imap.StatusResp{Type: imap.StatusRespNo, Info: "NO!"}
+	status = &StatusResp{Type: StatusRespNo, Info: "NO!"}
 	if err := status.Err(); err == nil {
 		t.Error("NO status didn't returned error:", err)
 	} else if err.Error() != "NO!" {

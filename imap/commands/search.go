@@ -29,7 +29,7 @@ func (cmd *Search) Command() *imap.Command {
 
 func (cmd *Search) Parse(fields []interface{}) error {
 	if len(fields) == 0 {
-		return errors.New("Missing search criteria")
+		return errors.New("Missing test criteria")
 	}
 
 	// Parse charset

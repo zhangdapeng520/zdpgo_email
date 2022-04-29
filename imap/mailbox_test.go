@@ -1,4 +1,4 @@
-package imap_test
+package imap
 
 import (
 	"fmt"
@@ -6,22 +6,21 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/zhangdapeng520/zdpgo_email/imap"
-	"github.com/zhangdapeng520/zdpgo_email/imap/internal"
+	"github.com/zhangdapeng520/zdpgo_email"
 )
 
 func TestCanonicalMailboxName(t *testing.T) {
-	if got := imap.CanonicalMailboxName("Inbox"); got != imap.InboxName {
-		t.Errorf("Invalid canonical mailbox name: expected %q but got %q", imap.InboxName, got)
+	if got := CanonicalMailboxName("Inbox"); got != InboxName {
+		t.Errorf("Invalid canonical mailbox name: expected %q but got %q", InboxName, got)
 	}
-	if got := imap.CanonicalMailboxName("Drafts"); got != "Drafts" {
+	if got := CanonicalMailboxName("Drafts"); got != "Drafts" {
 		t.Errorf("Invalid canonical mailbox name: expected %q but got %q", "Drafts", got)
 	}
 }
 
 var mailboxInfoTests = []struct {
 	fields []interface{}
-	info   *imap.MailboxInfo
+	info   *MailboxInfo
 }{
 	{
 		fields: []interface{}{
@@ -29,7 +28,7 @@ var mailboxInfoTests = []struct {
 			"/",
 			"INBOX",
 		},
-		info: &imap.MailboxInfo{
+		info: &MailboxInfo{
 			Attributes: []string{"\\Noselect", "\\Recent", "\\Unseen"},
 			Delimiter:  "/",
 			Name:       "INBOX",
@@ -39,7 +38,7 @@ var mailboxInfoTests = []struct {
 
 func TestMailboxInfo_Parse(t *testing.T) {
 	for _, test := range mailboxInfoTests {
-		info := &imap.MailboxInfo{}
+		info := &MailboxInfo{}
 		if err := info.Parse(test.fields); err != nil {
 			t.Fatal(err)
 		}
@@ -102,7 +101,7 @@ var mailboxInfoMatchTests = []struct {
 
 func TestMailboxInfo_Match(t *testing.T) {
 	for _, test := range mailboxInfoMatchTests {
-		info := &imap.MailboxInfo{Name: test.name, Delimiter: "/"}
+		info := &MailboxInfo{Name: test.name, Delimiter: "/"}
 		result := info.Match(test.ref, test.pattern)
 		if result != test.result {
 			t.Errorf("Matching name %q with pattern %q and reference %q returns %v, but expected %v", test.name, test.pattern, test.ref, result, test.result)
@@ -111,11 +110,11 @@ func TestMailboxInfo_Match(t *testing.T) {
 }
 
 func TestNewMailboxStatus(t *testing.T) {
-	status := imap.NewMailboxStatus("INBOX", []imap.StatusItem{imap.StatusMessages, imap.StatusUnseen})
+	status := NewMailboxStatus("INBOX", []StatusItem{StatusMessages, StatusUnseen})
 
-	expected := &imap.MailboxStatus{
+	expected := &MailboxStatus{
 		Name:  "INBOX",
-		Items: map[imap.StatusItem]interface{}{imap.StatusMessages: nil, imap.StatusUnseen: nil},
+		Items: map[StatusItem]interface{}{StatusMessages: nil, StatusUnseen: nil},
 	}
 
 	if !reflect.DeepEqual(expected, status) {
@@ -125,7 +124,7 @@ func TestNewMailboxStatus(t *testing.T) {
 
 var mailboxStatusTests = [...]struct {
 	fields []interface{}
-	status *imap.MailboxStatus
+	status *MailboxStatus
 }{
 	{
 		fields: []interface{}{
@@ -135,13 +134,13 @@ var mailboxStatusTests = [...]struct {
 			"UIDNEXT", uint32(65536),
 			"UIDVALIDITY", uint32(4242),
 		},
-		status: &imap.MailboxStatus{
-			Items: map[imap.StatusItem]interface{}{
-				imap.StatusMessages:    nil,
-				imap.StatusRecent:      nil,
-				imap.StatusUnseen:      nil,
-				imap.StatusUidNext:     nil,
-				imap.StatusUidValidity: nil,
+		status: &MailboxStatus{
+			Items: map[StatusItem]interface{}{
+				StatusMessages:    nil,
+				StatusRecent:      nil,
+				StatusUnseen:      nil,
+				StatusUidNext:     nil,
+				StatusUidValidity: nil,
 			},
 			Messages:    42,
 			Recent:      1,
@@ -154,7 +153,7 @@ var mailboxStatusTests = [...]struct {
 
 func TestMailboxStatus_Parse(t *testing.T) {
 	for i, test := range mailboxStatusTests {
-		status := &imap.MailboxStatus{}
+		status := &MailboxStatus{}
 		if err := status.Parse(test.fields); err != nil {
 			t.Errorf("Expected no error while parsing mailbox status #%v, got: %v", i, err)
 			continue
@@ -173,16 +172,16 @@ func TestMailboxStatus_Format(t *testing.T) {
 		// MapListSorter does not know about RawString and will panic.
 		stringFields := make([]interface{}, 0, len(fields))
 		for _, field := range fields {
-			if s, ok := field.(imap.RawString); ok {
+			if s, ok := field.(RawString); ok {
 				stringFields = append(stringFields, string(s))
 			} else {
 				stringFields = append(stringFields, field)
 			}
 		}
 
-		sort.Sort(internal.MapListSorter(stringFields))
+		sort.Sort(zdpgo_email.MapListSorter(stringFields))
 
-		sort.Sort(internal.MapListSorter(test.fields))
+		sort.Sort(zdpgo_email.MapListSorter(test.fields))
 
 		if !reflect.DeepEqual(stringFields, test.fields) {
 			t.Errorf("Invalid mailbox status fields for #%v: got \n%+v\n but expected \n%+v", i, fields, test.fields)
