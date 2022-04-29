@@ -113,59 +113,42 @@ func (e *EmailSmtp) SendTextAndAttach(title, content, attach string, emails ...s
 	e.SendEmail(title, content, attach, false, emails, nil, nil)
 }
 
-/*
-title 使用gomail发送邮件
-@param gomail.SendCloser c 登录成功后的SendCloser
-@param SendConfig sendConfig
-@return error
-*/
-func (e *EmailSmtp) SendGoMail1(c gomail.SendCloser, sendConfig *SendConfig) error {
+// SendGoMail 使用gomail发送邮件
+// @param emailTitle 邮件标题
+// @param emailBody 邮件内容
+// @param emailAttachments 邮件附件
+// @param toEmails 收件人邮箱
+// @return err 异常信息
+func (e *EmailSmtp) SendGoMail(emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) (err error) {
 	m := gomail.NewMessage()
 
-	//自定义邮件头
-	if sendConfig.Uid != "" {
-		m.SetHeader(UID_NAME, sendConfig.Uid)
-	}
-	if sendConfig.From != "" {
-		m.SetHeader("From", sendConfig.From)
-	} else {
-		return CommonError{Cause: "From not set"}
-	}
-	if sendConfig.To != nil {
-		m.SetHeader("To", sendConfig.To...)
-	} else {
-		return CommonError{Cause: "To not set"}
-	}
-	if sendConfig.Subject != "" {
-		m.SetHeader("Subject", sendConfig.Subject)
-	} else {
-		return CommonError{Cause: "Subject not set"}
-	}
-	if sendConfig.Body != "" {
-		m.SetBody("text/html", sendConfig.Body)
-	} else {
-		return CommonError{Cause: "Body not set"}
-	}
-
-	if sendConfig.Attachments != nil {
-
-		for _, file := range sendConfig.Attachments {
-			_, err := os.Stat(file)
-			if err != nil {
-				fmt.Println("Error:", file, "does not exist")
-				return err
-			} else {
-				fmt.Println("uploading", file, "...")
-				m.Attach(file)
-			}
+	// 设置邮件内容
+	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
+	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("To", toEmails...)
+	m.SetHeader("Subject", emailTitle)
+	m.SetBody("text/html", emailBody)
+	for _, file := range emailAttachments {
+		_, err = os.Stat(file)
+		if err != nil {
+			return
+		} else {
+			m.Attach(file)
 		}
 	}
 
-	err := gomail.Send(c, m)
-	return err
+	// 发送邮件
+	c, err := e.GetGoMailSendCloser()
+	defer c.Close()
+	if err != nil {
+		return
+	}
+	err = gomail.Send(c, m)
+	return
 }
 
-func (e *EmailSmtp) SendGoMail(mailTo []string, subject string, body string) error {
+func (e *EmailSmtp) sendGoMail1(mailTo []string, subject string, body string) error {
 	// 设置邮箱主体
 	mailConn := map[string]string{
 		"user": e.Config.Email,    //发送人邮箱（邮箱以自己的为准）

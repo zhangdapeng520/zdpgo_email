@@ -2,6 +2,7 @@ package zdpgo_email
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -94,6 +95,7 @@ type EmailImap struct {
 	//
 	// A Timeout of zero means no timeout. This is the default.
 	Timeout time.Duration
+	Config  *ConfigImap // 配置对象
 }
 
 func (c *EmailImap) registerHandler(h responses.Handler) {
@@ -683,4 +685,64 @@ func DialWithDialerTLS(dialer Dialer, addr string, tlsConfig *tls.Config) (*Emai
 	c.isTLS = true
 	c.serverName = serverName
 	return c, nil
+}
+
+// NewEmailImapWithConfig 根据配置信息，创建EmailImap实例
+func NewEmailImapWithConfig(config ConfigImap) (e *EmailImap, err error) {
+	// 创建连接对象
+	dialer := new(net.Dialer)
+	if config.Server == "" {
+		err = errors.New("邮件服务器地址不能为空")
+		return
+	}
+	conn, err := dialer.Dial("tcp", config.Server)
+	if err != nil {
+		return
+	}
+
+	// 连接到邮件服务器
+	serverName, _, _ := net.SplitHostPort(config.Server)
+	tlsConfig := &tls.Config{
+		ServerName: serverName,
+	}
+	tlsConn := tls.Client(conn, tlsConfig)
+
+	// 设置超时时间
+	if config.Timeout == 0 {
+		config.Timeout = 30
+	}
+	err = tlsConn.SetDeadline(time.Now().Add(time.Duration(config.Timeout) * time.Second))
+	if err != nil {
+		return
+	}
+
+	// 创建邮件对象
+	e, err = NewEmailImap(tlsConn)
+	if err != nil {
+		return
+	}
+
+	// 设置tls
+	e.isTLS = true
+	e.serverName = serverName
+
+	// 登录
+	if config.Username == "" {
+		err = errors.New("用户名不能为空")
+		return
+	}
+	if config.Password == "" {
+		err = errors.New("密码不能为空")
+		return
+	}
+	err = e.Login(config.Username, config.Password)
+
+	// 配置
+	if config.HeaderTagName == "" {
+		config.HeaderTagName = "zdpgo_email"
+	}
+	e.Config = &config
+
+	// 返回
+	return
 }

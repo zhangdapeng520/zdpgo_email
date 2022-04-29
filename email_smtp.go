@@ -76,6 +76,12 @@ func NewEmailSmtpWithConfig(config Config) *EmailSmtp {
 	}
 
 	// 初始化配置
+	if config.HeaderTagName == "" {
+		config.HeaderTagName = "zdpgo_email"
+	}
+	if config.HeaderTagValue == "" {
+		config.HeaderTagValue = "zhangdapeng520"
+	}
 	e.Config = &config
 
 	return e

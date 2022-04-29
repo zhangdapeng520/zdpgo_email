@@ -7,19 +7,17 @@ import (
 
 func main() {
 	email := zdpgo_email.NewEmailSmtp()
-	closer, err := email.GetGoMailSendCloser()
-	if err != nil {
-		fmt.Print(err)
-	}
-	defer closer.Close()
 
-	sendConfig := zdpgo_email.SendConfig{Uid: "localhost-test", From: "1156956636@qq.com", To: []string{"1156956636@qq.com"},
-		Subject: "你好111", Body: "这是golang测试邮件"}
-	err = email.SendGoMail1(closer, &sendConfig)
+	err := email.SendGoMail(
+		"这是一个测试邮件222",
+		"不要理我，我在自己玩",
+		nil,
+		"1156956636@qq.com",
+	)
 
 	if err != nil {
 		fmt.Print(err)
 	} else {
-		fmt.Println("send success")
+		fmt.Println("发送邮件成功")
 	}
 }

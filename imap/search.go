@@ -72,8 +72,8 @@ type SearchCriteria struct {
 	Body   []string             // Each string is in the body
 	Text   []string             // Each string is in the text (header + body)
 
-	WithFlags    []string // Each flag is present
-	WithoutFlags []string // Each flag is not present
+	WithFlags    []string // 每个标志都存在
+	WithoutFlags []string // 每个标志都不存在
 
 	Larger  uint32 // Size is larger than this number
 	Smaller uint32 // Size is smaller than this number

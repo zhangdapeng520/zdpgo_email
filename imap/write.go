@@ -156,7 +156,7 @@ func (w *Writer) writeLiteral(l Literal) error {
 		}
 
 		if !<-w.continues {
-			return fmt.Errorf("imap: cannot send literal: no continuation request received")
+			return fmt.Errorf("不能发送文字:没有收到延续请求")
 		}
 	}
 

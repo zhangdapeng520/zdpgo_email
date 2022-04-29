@@ -1,7 +1,6 @@
 package zdpgo_email
 
 import (
-	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
 )
 
@@ -19,7 +18,6 @@ import (
 // @param username 用户名
 // @param password 密码
 func (e *EmailSmtp) GetGoMailSendCloser() (gomail.SendCloser, error) {
-	fmt.Println(e.Config)
 	d := &gomail.Dialer{
 		Host:     e.Config.SmtpHost,
 		Port:     e.Config.SmtpPort,
