@@ -10,6 +10,7 @@ type Config struct {
 	SmtpHost string `yaml:"smtp_host" json:"smtp_host"` // 邮箱服务器的主机地址（域名）
 	SmtpPort int    `yaml:"smtp_port" json:"smtp_port"` // 端口
 	Id       string `yaml:"id" json:"id"`               // 权限ID，可以不填
+	IsSSL    bool   `yaml:"is_ssl" json:"is_ssl"`       // 是否为SSL模式
 }
 
 // 校验配置

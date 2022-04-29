@@ -10,14 +10,14 @@ const (
 	//MAIL_USER	= "test"
 	//MAIL_PWD	= "test123"
 
-	MAIL_USER = "zhangsan"
-	MAIL_PWD  = "zhangsan123"
+	MAIL_USER = "1156956636@qq.com"
+	MAIL_PWD  = "gluhsjysrosbbadc"
 
-	MAIL_SMTP_HOST = "10.1.3.208"
+	MAIL_SMTP_HOST = "smtp.qq.com"
 	MAIL_SMTP_PORT = 25
 
-	MAIL_IMAP_HOST = "10.1.3.208"
-	MAIL_IMAP_PORT = 143
+	MAIL_IMAP_HOST = "imap.qq.com"
+	MAIL_IMAP_PORT = 993
 
 	//MAIL_POP3_HOST  = "10.1.3.208"
 	//MAIL_POP3_PORT	= 110
@@ -66,7 +66,8 @@ func main() {
 		// qq邮箱有校验，不能随意伪造
 		//fakefrom := "xxx@qq.com"
 		//m.SetHeader("From",nickname + "<" + fakefrom + ">")
-		sendConfig := mail.SendConfig{Uid: "localhost-test", From: from, To: []string{"zhangsan@xmirror.org"}, Subject: "你好", Body: "这是golang测试邮件"}
+		sendConfig := mail.SendConfig{Uid: "localhost-test", From: from, To: []string{"lxgzhw@164.com"},
+			Subject: "你好", Body: "这是golang测试邮件"}
 		//sendConfig := mail1.SendConfig{Uid:"test2",From: from,To: []string{"3103557991@qq.com"},Subject:"你好",Body:"测试邮件"}
 		err = mail.SendMail(sc, &sendConfig)
 		//err =  mail1.SendMail(c,from,[]string{"zhangsan@xmirror.org"}, "附件测试", "这是附件测试邮件", []string{"D:\\Tool\\GoProjects\\fscan-main.zip","D:/Tool/GoProjects/gobyexample-master.zip"})
@@ -99,7 +100,7 @@ func main() {
 		//localhost
 		//preFilter := mail1.PreFilter{Subject:"中文附件", From: "zhangsan@xmirror.org", SentSince: "2022-03-26"}
 		//postFilter := mail1.PostFilter{Subject: "中文附件",From: "zhangsan@xmirror.org",Body: []string{"邮件"}}
-		preFilter := mail.PreFilter{Uid: "localhost-test", From: "test@xmirror.org", SentSince: "2022-04-07"}
+		preFilter := mail.PreFilter{Uid: "localhost-test", From: "1156956636@qq.com", SentSince: "2022-04-07"}
 		postFilter := mail.PostFilter{}
 		searchResults, err := mail.RecvSearch(c, &preFilter, &postFilter)
 
