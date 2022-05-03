@@ -14,7 +14,7 @@ func main() {
 	attachments := []string{
 		"README.md",
 	}
-	err := e.Send.SendWithDefaultTag(
+	key, err := e.Send.SendWithKey(
 		e.Random.Str.Str(16),
 		e.Random.Str.Str(128),
 		attachments,
@@ -24,6 +24,8 @@ func main() {
 	if err != nil {
 		fmt.Print(err)
 	} else {
-		fmt.Println("发送邮件成功")
+		fmt.Println("发送邮件成功，唯一标识是：", key)
 	}
+
+	//xcgWktkHQaANKtzbUCLRprQEcLWIAekj
 }

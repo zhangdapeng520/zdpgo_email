@@ -735,7 +735,7 @@ func NewEmailImapWithConfig(config ConfigImap) (e *EmailImap, err error) {
 		err = errors.New("密码不能为空")
 		return
 	}
-	err = e.Login(config.Username, config.Password)
+	err = e.Login(config.Email, config.Password)
 
 	// 配置
 	if config.HeaderTagName == "" {

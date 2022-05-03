@@ -113,6 +113,31 @@ func (e *EmailImap) SearchByDefaultTag(from string, startTime string) ([]MailMes
 	return mailMessages, nil
 }
 
+// SearchByKey 根据时间和key搜索邮件
+func (e *EmailImap) SearchByKey(from string, startTime string, key string) ([]MailMessage, error) {
+	mailMessages, err := e.SearchByTag(from, startTime, e.Config.HeaderTagName, key)
+	if err != nil {
+		return nil, err
+	}
+	return mailMessages, nil
+}
+
+// SearchByKeyToday 根据key搜索今天的邮件
+func (e *EmailImap) SearchByKeyToday(from string, key string) ([]MailMessage, error) {
+	startTime := time.Now().Format("2006-01-02") // 今天
+	mailMessages, err := e.SearchByTag(from, startTime, e.Config.HeaderTagName, key)
+	if err != nil {
+		return nil, err
+	}
+	return mailMessages, nil
+}
+
+// IsSendSuccessByKey 根据key判断邮件是否发送成功
+func (e *EmailImap) IsSendSuccessByKey(from string, key string) bool {
+	result, err := e.SearchByKeyToday(from, key)
+	return err == nil && result != nil && len(result) > 0
+}
+
 func (e *EmailImap) SearchBF(bf *PreFilter, af *PostFilter) ([]MailMessage, error) {
 	if bf.From == "" {
 		return nil, errors.New("bf.From 发件人不能为空")

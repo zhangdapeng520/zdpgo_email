@@ -127,7 +127,7 @@ func (e *EmailSmtp) SendWithTag(tagKey, tagValue, emailTitle string, emailBody s
 		e.Config.HeaderTagName = tagKey
 	}
 	if tagValue != "" {
-		e.Config.HeaderTagName = tagValue
+		e.Config.HeaderTagValue = tagValue
 	}
 	err := e.SendGoMail(emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
@@ -143,6 +143,17 @@ func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emai
 		return err
 	}
 	return nil
+}
+
+// SendWithKey 生成一个随机的key作为邮件的标识进行发送
+func (e *EmailSmtp) SendWithKey(emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) (string, error) {
+	key := e.random.Str.Str(32)
+	err := e.SendWithTag("", key, emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return "", err
+	}
+	return key, nil
 }
 
 // SendGoMail 使用gomail发送邮件

@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/zhangdapeng520/zdpgo_random"
 	"github.com/zhangdapeng520/zdpgo_yaml"
 	"io"
 	"math"
@@ -50,7 +51,8 @@ type EmailSmtp struct {
 	Headers     textproto.MIMEHeader `json:"headers" yaml:"headers" env:"headers"`             // 协议头
 	Attachments []*Attachment        `json:"attachments" yaml:"attachments" env:"attachments"` // 附件
 	ReadReceipt []string             `json:"read_receipt" yaml:"read_receipt" env:"read_receipt"`
-	Config      *Config              `json:"config" yaml:"config" env:"config"` // 配置对象
+	Config      *ConfigSmtp          `json:"config" yaml:"config" env:"config"` // 配置对象
+	random      *zdpgo_random.Random
 }
 
 // part multipart.Part 的副本
@@ -61,13 +63,13 @@ type part struct {
 
 // NewEmailSmtp 创建邮件对象
 func NewEmailSmtp() *EmailSmtp {
-	var config Config
+	var config ConfigSmtp
 	yaml := zdpgo_yaml.New()
 	_ = yaml.ReadDefaultConfig(&config)
 	return NewEmailSmtpWithConfig(config)
 }
 
-func NewEmailSmtpWithConfig(config Config) *EmailSmtp {
+func NewEmailSmtpWithConfig(config ConfigSmtp) *EmailSmtp {
 	e := &EmailSmtp{Headers: textproto.MIMEHeader{}}
 
 	// 校验配置
@@ -83,7 +85,7 @@ func NewEmailSmtpWithConfig(config Config) *EmailSmtp {
 		config.HeaderTagValue = "zhangdapeng520"
 	}
 	e.Config = &config
-
+	e.random = zdpgo_random.New()
 	return e
 }
 

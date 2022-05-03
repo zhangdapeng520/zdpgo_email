@@ -4,6 +4,11 @@ import "errors"
 
 // Config 配置类
 type Config struct {
+	SmtpConfigs []string `yaml:"smtp_configs" json:"smtp_configs"` // 发送者的名字
+	ImapConfigs []string `yaml:"imap_configs" json:"imap_configs"` // 发送者的名字
+}
+
+type ConfigSmtp struct {
 	Username       string `yaml:"username" json:"username"`                 // 发送者的名字
 	Email          string `yaml:"email" json:"email"`                       // 发送者的邮箱
 	Password       string `yaml:"password" json:"password"`                 // 发送者的邮箱的校验密码（不一定是登陆密码）
@@ -20,13 +25,14 @@ type ConfigImap struct {
 	Server         string `yaml:"server" json:"server" env:"server"`        // 服务器地址
 	Timeout        int    `yaml:"timeout" json:"timeout" env:"timeout"`     // 连接超时时间，默认30秒
 	Username       string `yaml:"username" json:"username" env:"username"`  // 用户名
+	Email          string `yaml:"email" json:"email" env:"email"`           // 邮箱
 	Password       string `yaml:"password" json:"password" env:"password"`  // 密码
 	HeaderTagName  string `yaml:"header_tag_name" json:"header_tag_name"`   // 请求头标记名
 	HeaderTagValue string `yaml:"header_tag_value" json:"header_tag_value"` // 请求头标记默认值
 }
 
 // 校验配置
-func validateConfig(config Config) error {
+func validateConfig(config ConfigSmtp) error {
 	// 校验配置参数
 	//SendName          string // 发送者的名字
 	if config.Username == "" {

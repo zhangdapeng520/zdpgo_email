@@ -22,10 +22,13 @@ func main() {
 		{From: "1156956636@qq.com"},
 	}
 
+	// 判断是否发送成功
+	fmt.Println("是否发送成功：", e.Receive.IsSendSuccessByKey("1156956636@qq.com", "fMWyiYXfxoTtCCXdfLvvdcYIzXrtesbX"))
+
 	// 进行测试
 	for _, preFilter := range fileters {
 		fmt.Println("开始测试：", preFilter)
-		searchResults, err := e.Receive.SearchByDefaultTag(preFilter.From, preFilter.SentSince)
+		searchResults, err := e.Receive.SearchByKeyToday(preFilter.From, "fMWyiYXfxoTtCCXdfLvvdcYIzXrtesbX")
 		if err != nil {
 			fmt.Println(err)
 		} else if len(searchResults) > 0 {
