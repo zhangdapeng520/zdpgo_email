@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	e := zdpgo_email.NewWithConfig(zdpgo_email.Config{
+	e, _ := zdpgo_email.NewWithConfig(zdpgo_email.Config{
 		SmtpConfigs: []string{"config/config_smtp.yaml", "config/secret/config_smtp.yaml"},
 		ImapConfigs: nil,
 	})

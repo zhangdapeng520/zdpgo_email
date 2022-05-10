@@ -1,23 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email"
 	"log"
 )
 
 func main() {
-	var (
-		c   *zdpgo_email.EmailImap // email邮件客户端
-		err error
-	)
-
 	// 建立连接
-	c, err = zdpgo_email.NewEmailImapWithConfig(zdpgo_email.ConfigImap{
-		Server:   server,
-		Username: username,
-		Password: password,
+	e, err := zdpgo_email.NewWithConfig(zdpgo_email.Config{
+		SmtpConfigs: nil,
+		ImapConfigs: []string{"config/config_imap.yaml", "config/secret/config_imap.yaml"},
 	})
 
 	// 连接失败报错
@@ -25,7 +18,6 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("登录成功")
-	defer c.Logout()
 
 	// 要测试的内容
 	fileters := []zdpgo_email.PreFilter{
@@ -36,16 +28,20 @@ func main() {
 	// 进行测试
 	for _, preFilter := range fileters {
 		fmt.Println("开始测试：", preFilter)
-		searchResults, err := c.SearchByTag(preFilter.From, preFilter.SentSince, preFilter.HeaderTagName, preFilter.HeaderTagValue)
+		searchResults, err := e.Receive.SearchByTag(preFilter.From, preFilter.SentSince, preFilter.HeaderTagName,
+			preFilter.HeaderTagValue)
 		if err != nil {
 			fmt.Println(err)
 		} else if len(searchResults) > 0 {
 			for _, msg := range searchResults {
-				jsonMsg, err := json.Marshal(msg)
-				if err != nil {
-					return
-				}
-				fmt.Println(string(jsonMsg))
+				fmt.Println("=========================")
+				fmt.Println(msg.Subject)
+				fmt.Println(msg.From)
+				fmt.Println(msg.To)
+				fmt.Println(msg.HeaderTagName)
+				fmt.Println(msg.HeaderTagValue)
+				fmt.Println(msg.Attachments)
+				fmt.Println("=========================")
 			}
 		}
 		fmt.Println("结束测试：", preFilter)

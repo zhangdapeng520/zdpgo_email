@@ -62,19 +62,22 @@ type part struct {
 }
 
 // NewEmailSmtp 创建邮件对象
-func NewEmailSmtp() *EmailSmtp {
+func NewEmailSmtp() (email *EmailSmtp, err error) {
 	var config ConfigSmtp
 	yaml := zdpgo_yaml.New()
-	_ = yaml.ReadDefaultConfig(&config)
+	err = yaml.ReadDefaultConfig(&config)
+	if err != nil {
+		return
+	}
 	return NewEmailSmtpWithConfig(config)
 }
 
-func NewEmailSmtpWithConfig(config ConfigSmtp) *EmailSmtp {
-	e := &EmailSmtp{Headers: textproto.MIMEHeader{}}
+func NewEmailSmtpWithConfig(config ConfigSmtp) (email *EmailSmtp, err error) {
+	email = &EmailSmtp{Headers: textproto.MIMEHeader{}}
 
 	// 校验配置
-	if err := validateConfig(config); err != nil {
-		panic(err)
+	if err = validateConfig(config); err != nil {
+		return
 	}
 
 	// 初始化配置
@@ -84,9 +87,9 @@ func NewEmailSmtpWithConfig(config ConfigSmtp) *EmailSmtp {
 	if config.HeaderTagValue == "" {
 		config.HeaderTagValue = "zhangdapeng520"
 	}
-	e.Config = &config
-	e.random = zdpgo_random.New()
-	return e
+	email.Config = &config
+	email.random = zdpgo_random.New()
+	return
 }
 
 // trimReader 是一个自定义的 io.Reader，这将削减任何前导空格，因为这可能导致电子邮件导入失败。
@@ -127,84 +130,88 @@ func handleAddressList(v []string) []string {
 
 // NewEmailFromReader 从一个io.Reade读取字节流, 并返回包含已解析数据的电子邮件结构体。
 // 该函数需要RFC 5322格式的数据。
-func NewEmailFromReader(r io.Reader) (*EmailSmtp, error) {
-	e := NewEmailSmtp()
+func NewEmailFromReader(r io.Reader) (email *EmailSmtp, err error) {
+	var (
+		ct     string
+		params map[string]string
+	)
+
+	email, err = NewEmailSmtp()
 	s := &trimReader{rd: r}
 	tp := textproto.NewReader(bufio.NewReader(s))
-	// Parse the main headers
 	hdrs, err := tp.ReadMIMEHeader()
 	if err != nil {
-		return e, err
+		return
 	}
 	// Set the subject, to, cc, bcc, and from
 	for h, v := range hdrs {
 		switch h {
 		case "Subject":
-			e.Subject = v[0]
-			subj, err := (&mime.WordDecoder{}).DecodeHeader(e.Subject)
+			email.Subject = v[0]
+			subj, err := (&mime.WordDecoder{}).DecodeHeader(email.Subject)
 			if err == nil && len(subj) > 0 {
-				e.Subject = subj
+				email.Subject = subj
 			}
 			delete(hdrs, h)
 		case "To":
-			e.To = handleAddressList(v)
+			email.To = handleAddressList(v)
 			delete(hdrs, h)
 		case "Cc":
-			e.Cc = handleAddressList(v)
+			email.Cc = handleAddressList(v)
 			delete(hdrs, h)
 		case "Bcc":
-			e.Bcc = handleAddressList(v)
+			email.Bcc = handleAddressList(v)
 			delete(hdrs, h)
 		case "Reply-To":
-			e.ReplyTo = handleAddressList(v)
+			email.ReplyTo = handleAddressList(v)
 			delete(hdrs, h)
 		case "From":
-			e.From = v[0]
-			fr, err := (&mime.WordDecoder{}).DecodeHeader(e.From)
+			email.From = v[0]
+			fr, err := (&mime.WordDecoder{}).DecodeHeader(email.From)
 			if err == nil && len(fr) > 0 {
-				e.From = fr
+				email.From = fr
 			}
 			delete(hdrs, h)
 		}
 	}
-	e.Headers = hdrs
+	email.Headers = hdrs
 	body := tp.R
 	// Recursively parse the MIME parts
-	ps, err := parseMIMEParts(e.Headers, body)
+	ps, err := parseMIMEParts(email.Headers, body)
 	if err != nil {
-		return e, err
+		return
 	}
 	for _, p := range ps {
 		if ct := p.header.Get("Content-Type"); ct == "" {
-			return e, ErrMissingContentType
+			return email, ErrMissingContentType
 		}
-		ct, _, err := mime.ParseMediaType(p.header.Get("Content-Type"))
+		ct, _, err = mime.ParseMediaType(p.header.Get("Content-Type"))
 		if err != nil {
-			return e, err
+			return
 		}
 		// Check if part is an attachment based on the existence of the Content-Disposition header with a value of "attachment".
 		if cd := p.header.Get("Content-Disposition"); cd != "" {
-			cd, params, err := mime.ParseMediaType(p.header.Get("Content-Disposition"))
+			cd, params, err = mime.ParseMediaType(p.header.Get("Content-Disposition"))
 			if err != nil {
-				return e, err
+				return
 			}
 			filename, filenameDefined := params["filename"]
 			if cd == "attachment" || (cd == "inline" && filenameDefined) {
-				_, err = e.Attach(bytes.NewReader(p.body), filename, ct)
+				_, err = email.Attach(bytes.NewReader(p.body), filename, ct)
 				if err != nil {
-					return e, err
+					return
 				}
 				continue
 			}
 		}
 		switch {
 		case ct == "text/plain":
-			e.Text = p.body
+			email.Text = p.body
 		case ct == "text/html":
-			e.HTML = p.body
+			email.HTML = p.body
 		}
 	}
-	return e, nil
+	return
 }
 
 // parseMIMEParts 将递归遍历一个MIME实体并返回一个[]MIME。包含每个(扁平)mime的部分。
