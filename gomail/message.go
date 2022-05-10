@@ -19,7 +19,7 @@ type Message struct {
 	encoding    Encoding
 	hEncoder    mimeEncoder
 	buf         bytes.Buffer
-	Fs          embed.FS // 嵌入文件系统
+	Fs          *embed.FS // 嵌入文件系统
 }
 
 type header map[string][]string
@@ -51,7 +51,7 @@ func NewMessage(settings ...MessageSetting) *Message {
 }
 
 // NewMessageWithFs 使用嵌入文件系统创建消息
-func NewMessageWithFs(fs embed.FS, settings ...MessageSetting) *Message {
+func NewMessageWithFs(fs *embed.FS, settings ...MessageSetting) *Message {
 	m := NewMessage(settings...)
 	m.Fs = fs
 	return m
@@ -322,12 +322,12 @@ func (m *Message) appendFile(list []*file, name string, settings []FileSetting) 
 }
 
 // appendFileWithFs 使用嵌入文件系统中的文件追加
-func (m *Message) appendFileWithFs(list []*file, name string, settings []FileSetting) []*file {
+func (m *Message) appendFileWithFs(fs *embed.FS, list []*file, name string, settings []FileSetting) []*file {
 	f := &file{
 		Name:   filepath.Base(name),
 		Header: make(map[string][]string),
 		CopyFunc: func(w io.Writer) error {
-			h, err := m.Fs.Open(name)
+			h, err := fs.Open(name)
 			if err != nil {
 				return err
 			}
@@ -356,8 +356,8 @@ func (m *Message) Attach(filename string, settings ...FileSetting) {
 }
 
 // AttachWithFs 使用嵌入文件系统作为附件
-func (m *Message) AttachWithFs(filename string, settings ...FileSetting) {
-	m.attachments = m.appendFileWithFs(m.attachments, filename, settings)
+func (m *Message) AttachWithFs(fs *embed.FS, filename string, settings ...FileSetting) {
+	m.attachments = m.appendFileWithFs(fs, m.attachments, filename, settings)
 }
 
 // Embed embeds the images to the email.

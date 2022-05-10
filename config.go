@@ -7,22 +7,23 @@ import (
 
 // Config 配置类
 type Config struct {
-	SmtpConfigs []string `yaml:"smtp_configs" json:"smtp_configs"` // 发送者的名字
-	ImapConfigs []string `yaml:"imap_configs" json:"imap_configs"` // 发送者的名字
-	Fs          embed.FS // 嵌入文件系统
-	IsUseFs     bool     `yaml:"is_use_fs" json:"is_use_fs" env:"is_use_fs"` // 是否使用fs嵌入文件系统
+	SmtpConfigs []string  `yaml:"smtp_configs" json:"smtp_configs"` // 发送者的名字
+	ImapConfigs []string  `yaml:"imap_configs" json:"imap_configs"` // 发送者的名字
+	Fs          *embed.FS // 嵌入文件系统
+	IsUseFs     bool      `yaml:"is_use_fs" json:"is_use_fs" env:"is_use_fs"` // 是否使用fs嵌入文件系统
 }
 
 type ConfigSmtp struct {
-	Username       string `yaml:"username" json:"username"`                 // 发送者的名字
-	Email          string `yaml:"email" json:"email"`                       // 发送者的邮箱
-	Password       string `yaml:"password" json:"password"`                 // 发送者的邮箱的校验密码（不一定是登陆密码）
-	SmtpHost       string `yaml:"smtp_host" json:"smtp_host"`               // 邮箱服务器的主机地址（域名）
-	SmtpPort       int    `yaml:"smtp_port" json:"smtp_port"`               // 端口
-	Id             string `yaml:"id" json:"id"`                             // 权限ID，可以不填
-	IsSSL          bool   `yaml:"is_ssl" json:"is_ssl"`                     // 是否为SSL模式
-	HeaderTagName  string `yaml:"header_tag_name" json:"header_tag_name"`   // 请求头标记名
-	HeaderTagValue string `yaml:"header_tag_value" json:"header_tag_value"` // 请求头标记值
+	Username       string    `yaml:"username" json:"username"`                 // 发送者的名字
+	Email          string    `yaml:"email" json:"email"`                       // 发送者的邮箱
+	Password       string    `yaml:"password" json:"password"`                 // 发送者的邮箱的校验密码（不一定是登陆密码）
+	SmtpHost       string    `yaml:"smtp_host" json:"smtp_host"`               // 邮箱服务器的主机地址（域名）
+	SmtpPort       int       `yaml:"smtp_port" json:"smtp_port"`               // 端口
+	Id             string    `yaml:"id" json:"id"`                             // 权限ID，可以不填
+	IsSSL          bool      `yaml:"is_ssl" json:"is_ssl"`                     // 是否为SSL模式
+	HeaderTagName  string    `yaml:"header_tag_name" json:"header_tag_name"`   // 请求头标记名
+	HeaderTagValue string    `yaml:"header_tag_value" json:"header_tag_value"` // 请求头标记值
+	Fs             *embed.FS // 嵌入文件系统
 }
 
 // ConfigImap EmailImap的相关配置

@@ -1,6 +1,7 @@
 package zdpgo_email
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
@@ -137,7 +138,8 @@ func (e *EmailSmtp) SendWithTag(tagKey, tagValue, emailTitle string, emailBody s
 }
 
 // SendWithTagAndFs 使用标签和嵌入文件系统发送邮件
-func (e *EmailSmtp) SendWithTagAndFs(tagKey, tagValue, emailTitle string, emailBody string, emailAttachments []string,
+func (e *EmailSmtp) SendWithTagAndFs(fs *embed.FS, tagKey, tagValue, emailTitle string, emailBody string,
+	emailAttachments []string,
 	toEmails ...string) error {
 	if tagKey != "" {
 		tagArr := strings.Split(tagKey, "-")
@@ -151,7 +153,7 @@ func (e *EmailSmtp) SendWithTagAndFs(tagKey, tagValue, emailTitle string, emailB
 	if tagValue != "" {
 		e.Config.HeaderTagValue = tagValue
 	}
-	err := e.SendGoMailWithFs(emailTitle, emailBody, emailAttachments, toEmails...)
+	err := e.SendGoMailWithFs(fs, emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
 		return err
 	}
@@ -169,9 +171,10 @@ func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emai
 }
 
 // SendWithDefaultTagWithFs 使用默认标签和嵌入文件系统发送邮件
-func (e *EmailSmtp) SendWithDefaultTagWithFs(emailTitle string, emailBody string, emailAttachments []string,
+func (e *EmailSmtp) SendWithDefaultTagWithFs(fs *embed.FS, emailTitle string, emailBody string,
+	emailAttachments []string,
 	toEmails ...string) error {
-	err := e.SendWithTagAndFs("", "", emailTitle, emailBody, emailAttachments, toEmails...)
+	err := e.SendWithTagAndFs(fs, "", "", emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
 		return err
 	}
@@ -225,9 +228,9 @@ func (e *EmailSmtp) SendGoMail(emailTitle string, emailBody string, emailAttachm
 }
 
 // SendGoMailWithFs 使用嵌入文件系统发送邮件
-func (e *EmailSmtp) SendGoMailWithFs(emailTitle string, emailBody string, emailAttachments []string,
+func (e *EmailSmtp) SendGoMailWithFs(fs *embed.FS, emailTitle string, emailBody string, emailAttachments []string,
 	toEmails ...string) (err error) {
-	m := gomail.NewMessageWithFs(e.Fs)
+	m := gomail.NewMessageWithFs(fs)
 
 	// 设置邮件内容
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
@@ -236,7 +239,7 @@ func (e *EmailSmtp) SendGoMailWithFs(emailTitle string, emailBody string, emailA
 	m.SetHeader("Subject", emailTitle)
 	m.SetBody("text/html", emailBody)
 	for _, file := range emailAttachments {
-		m.AttachWithFs(file)
+		m.AttachWithFs(fs, file)
 	}
 
 	// 发送邮件

@@ -54,7 +54,7 @@ type EmailSmtp struct {
 	ReadReceipt []string             `json:"read_receipt" yaml:"read_receipt" env:"read_receipt"`
 	Config      *ConfigSmtp          `json:"config" yaml:"config" env:"config"` // 配置对象
 	random      *zdpgo_random.Random
-	Fs          embed.FS // 嵌入文件系统
+	Fs          *embed.FS // 嵌入文件系统
 }
 
 // part multipart.Part 的副本

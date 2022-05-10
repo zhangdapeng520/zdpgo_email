@@ -4,23 +4,37 @@ import (
 	"embed"
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email"
+	"send/secret"
 )
 
-//go:embed upload/* email_file/*
+//go:embed upload/*
 var fsObj embed.FS
 
 func main() {
-	e, _ := zdpgo_email.NewWithConfig(zdpgo_email.Config{
-		SmtpConfigs: []string{"config/config_smtp.yaml", "config/secret/config_smtp.yaml"},
-		ImapConfigs: nil,
-		Fs:          fsObj, // 嵌入文件系统
-		IsUseFs:     true,
-	})
+	fmt.Println("===============", fsObj)
+
+	smtp := zdpgo_email.ConfigSmtp{
+		Username: "1156956636@qq.com",
+		Email:    "1156956636@qq.com",
+		Password: secret.SmtpPassword,
+		SmtpHost: "smtp.qq.com",
+		SmtpPort: 465,
+		IsSSL:    true,
+		Fs:       &fsObj,
+	}
+	imap := zdpgo_email.ConfigImap{
+		Server:   "imap.qq.com:993",
+		Username: "1156956636@qq.com",
+		Email:    "1156956636@qq.com",
+		Password: secret.ImapPassword,
+	}
+	e, _ := zdpgo_email.NewWithSmtpAndImapConfig(smtp, imap)
 
 	attachments := []string{
-		"email_file/95557a29de4b70a25ce62a03472be684",
+		"upload/test.txt",
 	}
 	err := e.Send.SendWithDefaultTagWithFs(
+		&fsObj,
 		e.Random.Str.Str(16),
 		e.Random.Str.Str(128),
 		attachments,

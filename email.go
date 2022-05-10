@@ -16,7 +16,7 @@ import (
 type Email struct {
 	Send    *EmailSmtp
 	Receive *EmailImap
-	Fs      embed.FS // 嵌入的文件系统
+	Fs      *embed.FS // 嵌入的文件系统
 	Random  *zdpgo_random.Random
 	Yaml    *zdpgo_yaml.Yaml
 }
@@ -63,6 +63,27 @@ func NewWithConfig(config Config) (email *Email, err error) {
 		if err != nil {
 			return
 		}
+	}
+
+	return
+}
+
+// NewWithSmtpAndImapConfig 使用smtp配置和imap配置创建邮件对象
+func NewWithSmtpAndImapConfig(smtp ConfigSmtp, imap ConfigImap) (email *Email, err error) {
+	email = &Email{}
+	email.Random = zdpgo_random.New()
+	email.Yaml = zdpgo_yaml.New()
+
+	// 邮件发送对象
+	email.Send, err = NewEmailSmtpWithConfig(smtp)
+	if err != nil {
+		return
+	}
+
+	// 邮件接收对象
+	email.Receive, err = NewEmailImapWithConfig(imap)
+	if err != nil {
+		return
 	}
 
 	return
