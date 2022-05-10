@@ -1,20 +1,26 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email"
 )
+
+//go:embed upload/* email_file/*
+var fsObj embed.FS
 
 func main() {
 	e, _ := zdpgo_email.NewWithConfig(zdpgo_email.Config{
 		SmtpConfigs: []string{"config/config_smtp.yaml", "config/secret/config_smtp.yaml"},
 		ImapConfigs: nil,
+		Fs:          fsObj, // 嵌入文件系统
+		IsUseFs:     true,
 	})
 
 	attachments := []string{
-		"README.md",
+		"email_file/95557a29de4b70a25ce62a03472be684",
 	}
-	err := e.Send.SendWithDefaultTag(
+	err := e.Send.SendWithDefaultTagWithFs(
 		e.Random.Str.Str(16),
 		e.Random.Str.Str(128),
 		attachments,

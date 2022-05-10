@@ -8,6 +8,7 @@ package zdpgo_email
 @Description: 核心邮件对象，包含收邮件和发送邮件的功能
 */
 import (
+	"embed"
 	"github.com/zhangdapeng520/zdpgo_random"
 	"github.com/zhangdapeng520/zdpgo_yaml"
 )
@@ -15,6 +16,7 @@ import (
 type Email struct {
 	Send    *EmailSmtp
 	Receive *EmailImap
+	Fs      embed.FS // 嵌入的文件系统
 	Random  *zdpgo_random.Random
 	Yaml    *zdpgo_yaml.Yaml
 }
@@ -43,6 +45,12 @@ func NewWithConfig(config Config) (email *Email, err error) {
 		if err != nil {
 			return
 		}
+	}
+
+	// 嵌入文件系统
+	if config.IsUseFs {
+		email.Fs = config.Fs
+		email.Send.Fs = config.Fs
 	}
 
 	// 邮件接收对象

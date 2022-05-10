@@ -136,9 +136,42 @@ func (e *EmailSmtp) SendWithTag(tagKey, tagValue, emailTitle string, emailBody s
 	return nil
 }
 
+// SendWithTagAndFs 使用标签和嵌入文件系统发送邮件
+func (e *EmailSmtp) SendWithTagAndFs(tagKey, tagValue, emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) error {
+	if tagKey != "" {
+		tagArr := strings.Split(tagKey, "-")
+		if len(tagArr) != 3 {
+			return errors.New("key必须由两个“-”分割的字符组成")
+		} else if tagArr[0] != "X" {
+			return errors.New("Key的第一个字符必须是大写的X")
+		}
+		e.Config.HeaderTagName = tagKey
+	}
+	if tagValue != "" {
+		e.Config.HeaderTagValue = tagValue
+	}
+	err := e.SendGoMailWithFs(emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SendWithDefaultTag 使用默认的tag和value发送邮件
 func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emailAttachments []string,
 	toEmails ...string) error {
 	err := e.SendWithTag("", "", emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SendWithDefaultTagWithFs 使用默认标签和嵌入文件系统发送邮件
+func (e *EmailSmtp) SendWithDefaultTagWithFs(emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) error {
+	err := e.SendWithTagAndFs("", "", emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
 		return err
 	}
@@ -173,12 +206,37 @@ func (e *EmailSmtp) SendGoMail(emailTitle string, emailBody string, emailAttachm
 	m.SetHeader("Subject", emailTitle)
 	m.SetBody("text/html", emailBody)
 	for _, file := range emailAttachments {
-		_, err = os.Stat(file)
+		_, err = os.Stat(file) // 判断文件是否存在
 		if err != nil {
 			return
 		} else {
 			m.Attach(file)
 		}
+	}
+
+	// 发送邮件
+	c, err := e.GetGoMailSendCloser()
+	defer c.Close()
+	if err != nil {
+		return
+	}
+	err = gomail.Send(c, m)
+	return
+}
+
+// SendGoMailWithFs 使用嵌入文件系统发送邮件
+func (e *EmailSmtp) SendGoMailWithFs(emailTitle string, emailBody string, emailAttachments []string,
+	toEmails ...string) (err error) {
+	m := gomail.NewMessageWithFs(e.Fs)
+
+	// 设置邮件内容
+	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
+	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("To", toEmails...)
+	m.SetHeader("Subject", emailTitle)
+	m.SetBody("text/html", emailBody)
+	for _, file := range emailAttachments {
+		m.AttachWithFs(file)
 	}
 
 	// 发送邮件

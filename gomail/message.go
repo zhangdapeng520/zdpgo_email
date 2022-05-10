@@ -2,6 +2,7 @@ package gomail
 
 import (
 	"bytes"
+	"embed"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,6 +19,7 @@ type Message struct {
 	encoding    Encoding
 	hEncoder    mimeEncoder
 	buf         bytes.Buffer
+	Fs          embed.FS // 嵌入文件系统
 }
 
 type header map[string][]string
@@ -45,6 +47,13 @@ func NewMessage(settings ...MessageSetting) *Message {
 		m.hEncoder = qEncoding
 	}
 
+	return m
+}
+
+// NewMessageWithFs 使用嵌入文件系统创建消息
+func NewMessageWithFs(fs embed.FS, settings ...MessageSetting) *Message {
+	m := NewMessage(settings...)
+	m.Fs = fs
 	return m
 }
 
@@ -283,6 +292,7 @@ func SetCopyFunc(f func(io.Writer) error) FileSetting {
 	}
 }
 
+// appendFile 追加文件
 func (m *Message) appendFile(list []*file, name string, settings []FileSetting) []*file {
 	f := &file{
 		Name:   filepath.Base(name),
@@ -311,9 +321,43 @@ func (m *Message) appendFile(list []*file, name string, settings []FileSetting) 
 	return append(list, f)
 }
 
+// appendFileWithFs 使用嵌入文件系统中的文件追加
+func (m *Message) appendFileWithFs(list []*file, name string, settings []FileSetting) []*file {
+	f := &file{
+		Name:   filepath.Base(name),
+		Header: make(map[string][]string),
+		CopyFunc: func(w io.Writer) error {
+			h, err := m.Fs.Open(name)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(w, h); err != nil {
+				h.Close()
+				return err
+			}
+			return h.Close()
+		},
+	}
+
+	for _, s := range settings {
+		s(f)
+	}
+
+	if list == nil {
+		return []*file{f}
+	}
+
+	return append(list, f)
+}
+
 // Attach attaches the files to the email.
 func (m *Message) Attach(filename string, settings ...FileSetting) {
 	m.attachments = m.appendFile(m.attachments, filename, settings)
+}
+
+// AttachWithFs 使用嵌入文件系统作为附件
+func (m *Message) AttachWithFs(filename string, settings ...FileSetting) {
+	m.attachments = m.appendFileWithFs(m.attachments, filename, settings)
 }
 
 // Embed embeds the images to the email.
