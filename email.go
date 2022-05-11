@@ -9,6 +9,7 @@ package zdpgo_email
 */
 import (
 	"embed"
+	"errors"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
 	"github.com/zhangdapeng520/zdpgo_log"
 	"github.com/zhangdapeng520/zdpgo_random"
@@ -39,11 +40,15 @@ func NewWithConfig(config Config) (email *Email, err error) {
 	if config.LogFilePath == "" {
 		config.LogFilePath = "logs/zdpgo/zdpgo_email.log"
 	}
-	email.Log = zdpgo_log.NewWithConfig(zdpgo_log.Config{
+	logConfig := zdpgo_log.Config{
 		Debug:       config.Debug,
 		OpenJsonLog: true,
 		LogFilePath: config.LogFilePath,
-	})
+	}
+	if config.Debug {
+		logConfig.IsShowConsole = true
+	}
+	email.Log = zdpgo_log.NewWithConfig(logConfig)
 	if config.Debug {
 		email.Log.Debug("创建email日志对象成功", "config", config)
 	}
@@ -105,6 +110,46 @@ func NewWithSmtpAndImapConfig(smtp ConfigSmtp, imap ConfigImap) (email *Email, e
 		return
 	}
 
+	return
+}
+
+// NewWithSmtpConfig 使用SMTP的配置创建邮件对象
+func NewWithSmtpConfig(smtp ConfigSmtp) (email *Email, err error) {
+	email = &Email{}
+	email.Random = zdpgo_random.New()
+	email.Yaml = zdpgo_yaml.New()
+
+	// 日志
+	if smtp.LogFilePath == "" {
+		smtp.LogFilePath = "logs/zdpgo/zdpgo_log.log"
+	}
+	logConfig := zdpgo_log.Config{
+		Debug:       smtp.Debug,
+		OpenJsonLog: true,
+		LogFilePath: smtp.LogFilePath,
+	}
+	if smtp.Debug {
+		logConfig.IsShowConsole = true
+	}
+	email.Log = zdpgo_log.NewWithConfig(logConfig)
+	if smtp.Debug {
+		email.Log.Debug("创建email日志对象成功", "config", smtp)
+	}
+
+	// 邮件发送对象
+	email.Send, err = NewEmailSmtpWithConfig(smtp)
+	if err != nil {
+		email.Log.Error("创建邮件发送对象失败", "error", err, "smtp", smtp)
+		return
+	}
+
+	// 邮件发送对象共用日志对象
+	email.Send.Log = email.Log
+
+	// 判断是否能够成功连接
+	if !email.IsHealth() {
+		err = errors.New("无法正常连接邮件服务器，请检查账号密码等配置是否正确")
+	}
 	return
 }
 

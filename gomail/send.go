@@ -37,15 +37,18 @@ func Send(s Sender, msg ...*Message) error {
 	if s == nil {
 		return errors.New("发送对象不能为空")
 	}
+
+	// 遍历消息内容
 	for i, m := range msg {
 		if err := send(s, m); err != nil {
-			return fmt.Errorf("gomail: could not send email %d: %v", i+1, err)
+			return fmt.Errorf("使用发送器发送邮件失败 %d: %v", i+1, err)
 		}
 	}
 
 	return nil
 }
 
+// 使用发送器发送单条消息
 func send(s Sender, m *Message) error {
 	from, err := m.getFrom()
 	if err != nil {
@@ -57,7 +60,7 @@ func send(s Sender, m *Message) error {
 		return err
 	}
 
-	if err := s.Send(from, to, m); err != nil {
+	if err = s.Send(from, to, m); err != nil {
 		return err
 	}
 

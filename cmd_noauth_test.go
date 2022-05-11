@@ -9,6 +9,9 @@ import (
 	"github.com/zhangdapeng520/zdpgo_email/sasl"
 )
 
+var LocalhostCert []byte
+var LocalhostKey []byte
+
 func TestClient_StartTLS(t *testing.T) {
 	c, s := newTestClient(t)
 	defer s.Close()

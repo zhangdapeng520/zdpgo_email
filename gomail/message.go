@@ -3,23 +3,28 @@ package gomail
 import (
 	"bytes"
 	"embed"
+	"errors"
+	"fmt"
+	"github.com/zhangdapeng520/zdpgo_log"
 	"io"
 	"os"
 	"path/filepath"
 	"time"
 )
 
-// Message represents an email.
+// Message 准备邮件内容
 type Message struct {
 	header      header
 	parts       []*part
-	attachments []*file
-	embedded    []*file
+	attachments []*AttachmentFile // 附件列表
+	embedded    []*AttachmentFile
 	charset     string
 	encoding    Encoding
 	hEncoder    mimeEncoder
 	buf         bytes.Buffer
-	Fs          *embed.FS // 嵌入文件系统
+	Fs          *embed.FS           // 嵌入文件系统
+	Readers     map[string]*os.File // 读取器列表
+	Log         *zdpgo_log.Log      // 日志对象
 }
 
 type header map[string][]string
@@ -30,8 +35,7 @@ type part struct {
 	encoding    Encoding
 }
 
-// NewMessage creates a new message. It uses UTF-8 and quoted-printable encoding
-// by default.
+// NewMessage 创建一条消息，默认使用UTF-8编码
 func NewMessage(settings ...MessageSetting) *Message {
 	m := &Message{
 		header:   make(header),
@@ -39,14 +43,15 @@ func NewMessage(settings ...MessageSetting) *Message {
 		encoding: QuotedPrintable,
 	}
 
+	// 应用设置
 	m.applySettings(settings)
 
+	// 编码
 	if m.encoding == Base64 {
 		m.hEncoder = bEncoding
 	} else {
 		m.hEncoder = qEncoding
 	}
-
 	return m
 }
 
@@ -54,6 +59,20 @@ func NewMessage(settings ...MessageSetting) *Message {
 func NewMessageWithFs(fs *embed.FS, settings ...MessageSetting) *Message {
 	m := NewMessage(settings...)
 	m.Fs = fs
+	return m
+}
+
+// NewMessageWithLog 使用日志对象创建消息对象
+func NewMessageWithLog(log *zdpgo_log.Log, settings ...MessageSetting) *Message {
+	m := NewMessage(settings...)
+	m.Log = log
+	return m
+}
+
+// NewMessageWithReaders 使用读取器列表创建消息
+func NewMessageWithReaders(readers map[string]*os.File, settings ...MessageSetting) *Message {
+	m := NewMessage(settings...)
+	m.Readers = readers
 	return m
 }
 
@@ -247,18 +266,19 @@ func SetPartEncoding(e Encoding) PartSetting {
 	})
 }
 
-type file struct {
-	Name     string
-	Header   map[string][]string
-	CopyFunc func(w io.Writer) error
+// 文件对象
+type AttachmentFile struct {
+	Name     string                  // 名称
+	Header   map[string][]string     // 请求头
+	CopyFunc func(w io.Writer) error // 复制函数
 }
 
-func (f *file) setHeader(field, value string) {
+func (f *AttachmentFile) setHeader(field, value string) {
 	f.Header[field] = []string{value}
 }
 
 // A FileSetting can be used as an argument in Message.Attach or Message.Embed.
-type FileSetting func(*file)
+type FileSetting func(*AttachmentFile)
 
 // SetHeader is a file setting to set the MIME header of the message part that
 // contains the file content.
@@ -266,7 +286,7 @@ type FileSetting func(*file)
 // Mandatory headers are automatically added if they are not set when sending
 // the email.
 func SetHeader(h map[string][]string) FileSetting {
-	return func(f *file) {
+	return func(f *AttachmentFile) {
 		for k, v := range h {
 			f.Header[k] = v
 		}
@@ -276,7 +296,7 @@ func SetHeader(h map[string][]string) FileSetting {
 // Rename is a file setting to set the name of the attachment if the name is
 // different than the filename on disk.
 func Rename(name string) FileSetting {
-	return func(f *file) {
+	return func(f *AttachmentFile) {
 		f.Name = name
 	}
 }
@@ -287,14 +307,14 @@ func Rename(name string) FileSetting {
 // The default copy function opens the file with the given filename, and copy
 // its content to the io.Writer.
 func SetCopyFunc(f func(io.Writer) error) FileSetting {
-	return func(fi *file) {
+	return func(fi *AttachmentFile) {
 		fi.CopyFunc = f
 	}
 }
 
 // appendFile 追加文件
-func (m *Message) appendFile(list []*file, name string, settings []FileSetting) []*file {
-	f := &file{
+func (m *Message) appendFile(list []*AttachmentFile, name string, settings []FileSetting) []*AttachmentFile {
+	f := &AttachmentFile{
 		Name:   filepath.Base(name),
 		Header: make(map[string][]string),
 		CopyFunc: func(w io.Writer) error {
@@ -315,15 +335,15 @@ func (m *Message) appendFile(list []*file, name string, settings []FileSetting) 
 	}
 
 	if list == nil {
-		return []*file{f}
+		return []*AttachmentFile{f}
 	}
 
 	return append(list, f)
 }
 
 // appendFileWithFs 使用嵌入文件系统中的文件追加
-func (m *Message) appendFileWithFs(fs *embed.FS, list []*file, name string, settings []FileSetting) []*file {
-	f := &file{
+func (m *Message) appendFileWithFs(fs *embed.FS, list []*AttachmentFile, name string, settings []FileSetting) []*AttachmentFile {
+	f := &AttachmentFile{
 		Name:   filepath.Base(name),
 		Header: make(map[string][]string),
 		CopyFunc: func(w io.Writer) error {
@@ -344,9 +364,112 @@ func (m *Message) appendFileWithFs(fs *embed.FS, list []*file, name string, sett
 	}
 
 	if list == nil {
-		return []*file{f}
+		return []*AttachmentFile{f}
 	}
 
+	return append(list, f)
+}
+
+// AddAttachmentFile 添加附件
+func (m *Message) AddAttachmentFile(fileName string, settings []FileSetting) {
+	f := &AttachmentFile{
+		Name:   filepath.Base(fileName),
+		Header: make(map[string][]string),
+		CopyFunc: func(w io.Writer) error {
+			h, err := os.Open(fileName)
+			if err != nil {
+				return err
+			}
+			if _, err = io.Copy(w, h); err != nil {
+				h.Close()
+				return err
+			}
+			return h.Close()
+		},
+	}
+
+	for _, s := range settings {
+		s(f)
+	}
+	m.attachments = append(m.attachments, f)
+}
+
+// AddAttachmentFileObj 添加文件对象作为附件
+func (m *Message) AddAttachmentFileObj(fileName string, fileObj *os.File) {
+	f := &AttachmentFile{
+		Name:   filepath.Base(fileName),
+		Header: make(map[string][]string),
+		CopyFunc: func(w io.Writer) error {
+			if _, err := io.Copy(w, fileObj); err != nil {
+				fileObj.Close()
+				return err
+			}
+			return fileObj.Close()
+		},
+	}
+	m.attachments = append(m.attachments, f)
+}
+
+// appendFileWithReaders 使用读取器列表中的文件追加
+func (m *Message) appendFileWithReaders(readers map[string]*os.File, list []*AttachmentFile, name string,
+	settings []FileSetting) []*AttachmentFile {
+	f := &AttachmentFile{
+		Name:   filepath.Base(name),
+		Header: make(map[string][]string),
+		CopyFunc: func(w io.Writer) error {
+			if h, ok := readers[name]; ok { // 获取指定文件的reader
+				if _, err := io.Copy(w, h); err != nil {
+					h.Close()
+					return err
+				}
+				return h.Close()
+			}
+			return errors.New(fmt.Sprintf("文件不存在：%s", name))
+		},
+	}
+
+	for _, s := range settings {
+		s(f)
+	}
+
+	if list == nil {
+		return []*AttachmentFile{f}
+	}
+
+	return append(list, f)
+}
+
+// appendFileWithFiles 使用文件列表追加附件列表
+func (m *Message) appendFileWithFiles(files map[string]*os.File, list []*AttachmentFile, name string,
+	settings []FileSetting) []*AttachmentFile {
+
+	// 创建文件
+	f := &AttachmentFile{
+		Name:   filepath.Base(name),       // 文件名
+		Header: make(map[string][]string), // 请求头
+		CopyFunc: func(w io.Writer) error { // 复制方法
+			if h, ok := files[name]; ok { // 获取指定文件的reader
+				if _, err := io.Copy(w, h); err != nil {
+					h.Close()
+					return err
+				}
+				return h.Close()
+			}
+			return errors.New(fmt.Sprintf("文件不存在：%s", name))
+		},
+	}
+
+	// 设置文件
+	for _, s := range settings {
+		s(f)
+	}
+
+	// 文件列表为空
+	if list == nil {
+		return []*AttachmentFile{f}
+	}
+
+	// 追加文件到文件列表
 	return append(list, f)
 }
 
@@ -358,6 +481,16 @@ func (m *Message) Attach(filename string, settings ...FileSetting) {
 // AttachWithFs 使用嵌入文件系统作为附件
 func (m *Message) AttachWithFs(fs *embed.FS, filename string, settings ...FileSetting) {
 	m.attachments = m.appendFileWithFs(fs, m.attachments, filename, settings)
+}
+
+// AttachWithReaders 使用读取器列表作为附件
+func (m *Message) AttachWithReaders(readers map[string]*os.File, filename string, settings ...FileSetting) {
+	m.attachments = m.appendFileWithReaders(readers, m.attachments, filename, settings)
+}
+
+// AttachWithFiles 使用文件列表追加附件
+func (m *Message) AttachWithFiles(files map[string]*os.File, filename string, settings ...FileSetting) {
+	m.attachments = m.appendFileWithFiles(files, m.attachments, filename, settings)
 }
 
 // Embed embeds the images to the email.

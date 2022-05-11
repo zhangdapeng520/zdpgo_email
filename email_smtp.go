@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/zhangdapeng520/zdpgo_log"
 	"github.com/zhangdapeng520/zdpgo_random"
 	"github.com/zhangdapeng520/zdpgo_yaml"
 	"io"
@@ -54,7 +55,8 @@ type EmailSmtp struct {
 	ReadReceipt []string             `json:"read_receipt" yaml:"read_receipt" env:"read_receipt"`
 	Config      *ConfigSmtp          `json:"config" yaml:"config" env:"config"` // 配置对象
 	random      *zdpgo_random.Random
-	Fs          *embed.FS // 嵌入文件系统
+	Fs          *embed.FS      // 嵌入文件系统
+	Log         *zdpgo_log.Log // 日志对象
 }
 
 // part multipart.Part 的副本

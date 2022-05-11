@@ -160,6 +160,58 @@ func (e *EmailSmtp) SendWithTagAndFs(fs *embed.FS, tagKey, tagValue, emailTitle 
 	return nil
 }
 
+// SendWithTagAndReaders 使用标签和读取器列表发送邮件
+func (e *EmailSmtp) SendWithTagAndReaders(readers map[string]*os.File, tagKey, tagValue, emailTitle string,
+	emailBody string,
+	emailAttachments []string,
+	toEmails ...string) error {
+	if tagKey != "" {
+		tagArr := strings.Split(tagKey, "-")
+		if len(tagArr) != 3 {
+			return errors.New("key必须由两个“-”分割的字符组成")
+		} else if tagArr[0] != "X" {
+			return errors.New("Key的第一个字符必须是大写的X")
+		}
+		e.Config.HeaderTagName = tagKey
+	}
+	if tagValue != "" {
+		e.Config.HeaderTagValue = tagValue
+	}
+	err := e.SendGoMailWithReaders(readers, emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SendWithTagAndFiles 使用标签和文件列表发送邮件
+func (e *EmailSmtp) SendWithTagAndFiles(files map[string]*os.File, tagKey, tagValue, emailTitle string,
+	emailBody string, toEmails ...string) error {
+	e.Log.Debug("SendWithTagAndFiles 使用标签和文件列表发送邮件")
+
+	// 处理标签和校验Key
+	if tagKey != "" {
+		tagArr := strings.Split(tagKey, "-")
+		if len(tagArr) != 3 {
+			return errors.New("key必须由两个“-”分割的字符组成")
+		} else if tagArr[0] != "X" {
+			return errors.New("Key的第一个字符必须是大写的X")
+		}
+		e.Config.HeaderTagName = tagKey
+	}
+	if tagValue != "" {
+		e.Config.HeaderTagValue = tagValue
+	}
+
+	// 发送邮件
+	err := e.SendGoMailWithFiles(files, emailTitle, emailBody, toEmails...)
+	if err != nil {
+		e.Log.Error("使用标签和文件列表发送邮件失败", "error", err)
+		return err
+	}
+	return nil
+}
+
 // SendWithDefaultTag 使用默认的tag和value发送邮件
 func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emailAttachments []string,
 	toEmails ...string) error {
@@ -176,6 +228,28 @@ func (e *EmailSmtp) SendWithDefaultTagWithFs(fs *embed.FS, emailTitle string, em
 	toEmails ...string) error {
 	err := e.SendWithTagAndFs(fs, "", "", emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SendWithDefaultTagWithReaders 使用默认标签和读取器发送邮件
+func (e *EmailSmtp) SendWithDefaultTagWithReaders(readers map[string]*os.File, emailTitle string, emailBody string,
+	emailAttachments []string,
+	toEmails ...string) error {
+	err := e.SendWithTagAndReaders(readers, "", "", emailTitle, emailBody, emailAttachments, toEmails...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SendWithDefaultTagWithFiles 使用默认标签和文件列表发送文件
+func (e *EmailSmtp) SendWithDefaultTagWithFiles(files map[string]*os.File, emailTitle string, emailBody string, toEmails ...string) error {
+	e.Log.Debug("使用默认标签和文件列表发送文件")
+	err := e.SendWithTagAndFiles(files, "", "", emailTitle, emailBody, toEmails...)
+	if err != nil {
+		e.Log.Error("使用默认标签和文件列表发送文件失败", "error", err)
 		return err
 	}
 	return nil
@@ -251,6 +325,77 @@ func (e *EmailSmtp) SendGoMailWithFs(fs *embed.FS, emailTitle string, emailBody 
 		return
 	}
 	err = gomail.Send(c, m)
+	return
+}
+
+// SendGoMailWithReaders 使用读取器列表发送邮件
+func (e *EmailSmtp) SendGoMailWithReaders(readers map[string]*os.File, emailTitle string, emailBody string,
+	emailAttachments []string,
+	toEmails ...string) (err error) {
+	m := gomail.NewMessageWithReaders(readers)
+
+	// 设置邮件内容
+	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
+	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("To", toEmails...)
+	m.SetHeader("Subject", emailTitle)
+	m.SetBody("text/html", emailBody)
+	for _, file := range emailAttachments {
+		m.AttachWithReaders(readers, file)
+	}
+
+	// 发送邮件
+	c, err := e.GetGoMailSendCloser()
+	if c != nil {
+		defer c.Close()
+	}
+	if err != nil {
+		return
+	}
+	err = gomail.Send(c, m)
+	return
+}
+
+// SendGoMailWithFiles 使用gmail和文件列表发送文件
+func (e *EmailSmtp) SendGoMailWithFiles(files map[string]*os.File, emailTitle string, emailBody string, toEmails ...string) (err error) {
+	e.Log.Debug("SendGoMailWithFiles 使用gmail和文件列表发送文件")
+
+	// 创建消息对象
+	m := gomail.NewMessageWithLog(e.Log)
+
+	// 设置邮件内容
+	e.Log.Debug("设置邮件内容", "tag", e.Config.HeaderTagName, "key", e.Config.HeaderTagValue, "from", e.Config.Email, "to",
+		toEmails, "title", emailTitle)
+	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
+	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("To", toEmails...)
+	m.SetHeader("Subject", emailTitle)
+	m.SetBody("text/html", emailBody)
+
+	// 添加附件
+	for fileName, fileObj := range files {
+		m.AddAttachmentFileObj(fileName, fileObj)
+	}
+
+	// 获取邮件发送器
+	c, err := e.GetGoMailSendCloser()
+	if err != nil {
+		e.Log.Error("获取邮件发送器失败", "error", err)
+		return
+	}
+	if c == nil {
+		err = errors.New("邮件发送器为空")
+		e.Log.Error(err.Error())
+		return
+	} else {
+		defer c.Close()
+	}
+
+	// 发送邮件
+	err = gomail.Send(c, m)
+	if err != nil {
+		e.Log.Error("发送邮件失败", "error", err)
+	}
 	return
 }
 

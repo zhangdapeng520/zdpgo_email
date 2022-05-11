@@ -112,7 +112,7 @@ func (w *messageWriter) writePart(p *part, charset string) {
 	w.writeBody(p.copier, p.encoding)
 }
 
-func (w *messageWriter) addFiles(files []*file, isAttachment bool) {
+func (w *messageWriter) addFiles(files []*AttachmentFile, isAttachment bool) {
 	for _, f := range files {
 		if _, ok := f.Header["Content-Type"]; !ok {
 			mediaType := mime.TypeByExtension(filepath.Ext(f.Name))
