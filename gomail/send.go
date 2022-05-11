@@ -32,8 +32,11 @@ func (f SendFunc) Send(from string, to []string, msg io.WriterTo) error {
 	return f(from, to, msg)
 }
 
-// Send sends emails using the given Sender.
+// Send 使用发送器发送对象
 func Send(s Sender, msg ...*Message) error {
+	if s == nil {
+		return errors.New("发送对象不能为空")
+	}
 	for i, m := range msg {
 		if err := send(s, m); err != nil {
 			return fmt.Errorf("gomail: could not send email %d: %v", i+1, err)

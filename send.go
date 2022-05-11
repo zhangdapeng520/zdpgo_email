@@ -244,7 +244,9 @@ func (e *EmailSmtp) SendGoMailWithFs(fs *embed.FS, emailTitle string, emailBody 
 
 	// 发送邮件
 	c, err := e.GetGoMailSendCloser()
-	defer c.Close()
+	if c != nil {
+		defer c.Close()
+	}
 	if err != nil {
 		return
 	}
