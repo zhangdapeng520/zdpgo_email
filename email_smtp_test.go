@@ -19,7 +19,7 @@ import (
 )
 
 func prepareEmailSmtp() *EmailSmtp {
-	e := NewEmailSmtp()
+	e, _ := NewEmailSmtp()
 	e.From = "Jordan Wright <test@example.com>"
 	e.To = []string{"test@example.com"}
 	e.Bcc = []string{"test_bcc@example.com"}
@@ -729,7 +729,7 @@ TGV0J3MganVzdCBwcmV0ZW5kIHRoaXMgaXMgcmF3IEpQRUcgZGF0YS4=
 }
 
 func ExampleGmail() {
-	e := NewEmailSmtp()
+	e, _ := NewEmailSmtp()
 	e.From = "Jordan Wright <test@gmail.com>"
 	e.To = []string{"test@example.com"}
 	e.Bcc = []string{"test_bcc@example.com"}
@@ -741,7 +741,7 @@ func ExampleGmail() {
 }
 
 func ExampleAttach() {
-	e := NewEmailSmtp()
+	e, _ := NewEmailSmtp()
 	e.AttachFile("test.txt")
 }
 

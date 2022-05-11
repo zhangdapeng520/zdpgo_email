@@ -7,8 +7,10 @@ import (
 
 // Config 配置类
 type Config struct {
-	SmtpConfigs []string  `yaml:"smtp_configs" json:"smtp_configs"` // 发送者的名字
-	ImapConfigs []string  `yaml:"imap_configs" json:"imap_configs"` // 发送者的名字
+	Debug       bool      `yaml:"debug" json:"debug" env:"debug"`                         // 是否为debug模式
+	LogFilePath string    `yaml:"log_file_path" json:"log_file_path" env:"log_file_path"` // 日志文件路径
+	SmtpConfigs []string  `yaml:"smtp_configs" json:"smtp_configs"`                       // 发送配置
+	ImapConfigs []string  `yaml:"imap_configs" json:"imap_configs"`                       // 接收配置
 	Fs          *embed.FS // 嵌入文件系统
 	IsUseFs     bool      `yaml:"is_use_fs" json:"is_use_fs" env:"is_use_fs"` // 是否使用fs嵌入文件系统
 }
