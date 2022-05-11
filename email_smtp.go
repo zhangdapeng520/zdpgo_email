@@ -53,7 +53,7 @@ type EmailSmtp struct {
 	Headers     textproto.MIMEHeader `json:"headers" yaml:"headers" env:"headers"`             // 协议头
 	Attachments []*Attachment        `json:"attachments" yaml:"attachments" env:"attachments"` // 附件
 	ReadReceipt []string             `json:"read_receipt" yaml:"read_receipt" env:"read_receipt"`
-	Config      *ConfigSmtp          `json:"config" yaml:"config" env:"config"` // 配置对象
+	Config      *Config              `json:"config" yaml:"config" env:"config"` // 配置对象
 	random      *zdpgo_random.Random
 	Fs          *embed.FS      // 嵌入文件系统
 	Log         *zdpgo_log.Log // 日志对象
@@ -67,7 +67,7 @@ type part struct {
 
 // NewEmailSmtp 创建邮件对象
 func NewEmailSmtp() (email *EmailSmtp, err error) {
-	var config ConfigSmtp
+	var config Config
 	yaml := zdpgo_yaml.New()
 	err = yaml.ReadDefaultConfig(&config)
 	if err != nil {
@@ -76,13 +76,8 @@ func NewEmailSmtp() (email *EmailSmtp, err error) {
 	return NewEmailSmtpWithConfig(config)
 }
 
-func NewEmailSmtpWithConfig(config ConfigSmtp) (email *EmailSmtp, err error) {
+func NewEmailSmtpWithConfig(config Config) (email *EmailSmtp, err error) {
 	email = &EmailSmtp{Headers: textproto.MIMEHeader{}}
-
-	// 校验配置
-	if err = validateConfig(config); err != nil {
-		return
-	}
 
 	// 初始化配置
 	if config.HeaderTagName == "" {
@@ -93,6 +88,17 @@ func NewEmailSmtpWithConfig(config ConfigSmtp) (email *EmailSmtp, err error) {
 	}
 	email.Config = &config
 	email.random = zdpgo_random.New()
+
+	// 日志
+	logConfig := zdpgo_log.Config{
+		Debug:       config.Debug,
+		OpenJsonLog: true,
+		LogFilePath: "logs/zdpgo/zdpgo_email.log",
+	}
+	if config.Debug {
+		logConfig.IsShowConsole = true
+	}
+	email.Log = zdpgo_log.NewWithConfig(logConfig)
 	return
 }
 

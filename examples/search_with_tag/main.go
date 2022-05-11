@@ -4,13 +4,22 @@ import (
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email"
 	"log"
+	"search/secret"
 )
 
 func main() {
 	// 建立连接
-	e, err := zdpgo_email.NewWithConfig(zdpgo_email.Config{
-		SmtpConfigs: nil,
-		ImapConfigs: []string{"config/config_imap.yaml", "config/secret/config_imap.yaml"},
+	var e, err = zdpgo_email.NewWithConfig(zdpgo_email.Config{
+		Debug: true,
+		Smtp:  zdpgo_email.ConfigEmail{},
+		Imap: zdpgo_email.ConfigEmail{
+			Email:    "1156956636@qq.com",
+			Username: "1156956636@qq.com",
+			Password: secret.ImapPassword,
+			Host:     "imap.qq.com",
+			Port:     993,
+			IsSSL:    true,
+		},
 	})
 
 	// 连接失败报错
@@ -21,8 +30,8 @@ func main() {
 
 	// 要测试的内容
 	fileters := []zdpgo_email.PreFilter{
-		//{From: "1156956636@qq.com", SentSince: "2022-04-29", HeaderTagName: "abc123", HeaderTagValue: "hhh"},
-		{From: "1156956636@qq.com", HeaderTagName: "X-ZdpgoEmail-Auther", HeaderTagValue: "zhangdapeng520"},
+		{From: "1156956636@qq.com", SentSince: "2022-04-29", HeaderTagName: "X-ZdpgoEmail-Auther", HeaderTagValue: "zhangdapeng520"},
+		//{From: "1156956636@qq.com", HeaderTagName: "X-ZdpgoEmail-Auther", HeaderTagValue: "zhangdapeng520"},
 	}
 
 	// 进行测试

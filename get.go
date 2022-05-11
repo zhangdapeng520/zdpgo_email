@@ -20,11 +20,11 @@ import (
 // @param password 密码
 func (e *EmailSmtp) GetGoMailSendCloser() (gomail.SendCloser, error) {
 	d := &gomail.Dialer{
-		Host:     e.Config.SmtpHost,
-		Port:     e.Config.SmtpPort,
-		Username: e.Config.Email,
-		Password: e.Config.Password,
-		SSL:      e.Config.IsSSL,
+		Host:     e.Config.Smtp.Host,
+		Port:     e.Config.Smtp.Port,
+		Username: e.Config.Smtp.Email,
+		Password: e.Config.Smtp.Password,
+		SSL:      e.Config.Smtp.IsSSL,
 	}
 
 	// 拨号并获取邮件发送器

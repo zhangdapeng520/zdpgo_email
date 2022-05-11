@@ -8,12 +8,16 @@ package zdpgo_email
 @Description: 核心邮件对象，包含收邮件和发送邮件的功能
 */
 import (
+	"crypto/tls"
 	"embed"
-	"errors"
+	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
 	"github.com/zhangdapeng520/zdpgo_log"
 	"github.com/zhangdapeng520/zdpgo_random"
 	"github.com/zhangdapeng520/zdpgo_yaml"
+	"net"
+	"net/textproto"
+	"time"
 )
 
 type Email struct {
@@ -23,6 +27,7 @@ type Email struct {
 	Random  *zdpgo_random.Random
 	Yaml    *zdpgo_yaml.Yaml
 	Log     *zdpgo_log.Log // 日志对象
+	Config  *Config        // 配置对象
 }
 
 // New 新建邮件对象，支持发送邮件和接收邮件
@@ -53,103 +58,76 @@ func NewWithConfig(config Config) (email *Email, err error) {
 		email.Log.Debug("创建email日志对象成功", "config", config)
 	}
 
-	// 邮件发送对象
-	if config.SmtpConfigs != nil && len(config.SmtpConfigs) > 0 {
-		var configSmtp ConfigSmtp
-		for _, cfgFile := range config.SmtpConfigs {
-			err = email.Yaml.ReadConfig(cfgFile, &configSmtp)
-			if err != nil {
-				email.Log.Error("读取邮件发送配置失败", "error", err, "cfgFile", cfgFile)
-				return
-			}
-		}
-		email.Send, err = NewEmailSmtpWithConfig(configSmtp)
-		if err != nil {
-			email.Log.Error("创建邮件发送对象失败", "error", err, "configSmtp", configSmtp)
-			return
-		}
+	// 标识符
+	if config.HeaderTagName == "" {
+		config.HeaderTagName = "X-ZdpgoEmail-Auther"
+	}
+	if config.HeaderTagValue == "" {
+		config.HeaderTagValue = "zhangdapeng520"
 	}
 
-	// 嵌入文件系统
-	if config.IsUseFs {
-		email.Fs = config.Fs
-		email.Send.Fs = config.Fs
+	// 邮件发送对象
+	if config.Smtp.Host != "" && config.Smtp.Port != 0 && config.Smtp.Password != "" {
+		email.Send = &EmailSmtp{Headers: textproto.MIMEHeader{}}
+		email.Send.random = zdpgo_random.New()
+		email.Send.Log = email.Log
 	}
 
 	// 邮件接收对象
-	if config.ImapConfigs != nil && len(config.ImapConfigs) > 0 {
-		var configImap ConfigImap
-		for _, cfgFile := range config.ImapConfigs {
-			_ = email.Yaml.ReadConfig(cfgFile, &configImap)
-		}
-		email.Receive, err = NewEmailImapWithConfig(configImap)
+	if config.Imap.Host != "" && config.Imap.Port != 0 && config.Imap.Password != "" {
+		dialer := new(net.Dialer)
+		var (
+			conn net.Conn
+		)
+		conn, err = dialer.Dial("tcp", fmt.Sprintf("%s:%d", config.Imap.Host, config.Imap.Port))
 		if err != nil {
-			email.Log.Error("创建邮件接收对象失败", "error", err, "configImap", configImap)
+			email.Log.Error("创建邮件接收对象失败")
 			return
 		}
+		// 连接到邮件服务器
+		tlsConfig := &tls.Config{
+			ServerName: config.Imap.Host,
+		}
+		tlsConn := tls.Client(conn, tlsConfig)
+		if config.Timeout == 0 {
+			config.Timeout = 30
+		}
+		err = tlsConn.SetDeadline(time.Now().Add(time.Duration(config.Timeout) * time.Second))
+		if err != nil {
+			email.Log.Error("连接到收件邮件服务器失败", "error", err)
+			return
+		}
+
+		// 创建邮件接收对象
+		email.Receive, err = NewEmailImap(tlsConn)
+		if err != nil {
+			email.Log.Error("创建邮件接收对象失败", "error", err)
+			return
+		}
+
+		// 设置tls
+		email.Receive.isTLS = true
+		email.Receive.serverName = config.Imap.Host
+
+		// 登录
+		if config.Imap.Email == "" {
+			config.Imap.Email = config.Imap.Username
+		}
+		err = email.Receive.Login(config.Imap.Email, config.Imap.Password)
+		if err != nil {
+			email.Log.Error("登录邮件收件服务器失败", "error", err)
+		}
 	}
 
-	return
-}
-
-// NewWithSmtpAndImapConfig 使用smtp配置和imap配置创建邮件对象
-func NewWithSmtpAndImapConfig(smtp ConfigSmtp, imap ConfigImap) (email *Email, err error) {
-	email = &Email{}
-	email.Random = zdpgo_random.New()
-	email.Yaml = zdpgo_yaml.New()
-
-	// 邮件发送对象
-	email.Send, err = NewEmailSmtpWithConfig(smtp)
-	if err != nil {
-		return
+	// 保存配置
+	email.Config = &config
+	if email.Send != nil {
+		email.Send.Config = &config
+	}
+	if email.Receive != nil {
+		email.Receive.Config = &config
 	}
 
-	// 邮件接收对象
-	email.Receive, err = NewEmailImapWithConfig(imap)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-// NewWithSmtpConfig 使用SMTP的配置创建邮件对象
-func NewWithSmtpConfig(smtp ConfigSmtp) (email *Email, err error) {
-	email = &Email{}
-	email.Random = zdpgo_random.New()
-	email.Yaml = zdpgo_yaml.New()
-
-	// 日志
-	if smtp.LogFilePath == "" {
-		smtp.LogFilePath = "logs/zdpgo/zdpgo_log.log"
-	}
-	logConfig := zdpgo_log.Config{
-		Debug:       smtp.Debug,
-		OpenJsonLog: true,
-		LogFilePath: smtp.LogFilePath,
-	}
-	if smtp.Debug {
-		logConfig.IsShowConsole = true
-	}
-	email.Log = zdpgo_log.NewWithConfig(logConfig)
-	if smtp.Debug {
-		email.Log.Debug("创建email日志对象成功", "config", smtp)
-	}
-
-	// 邮件发送对象
-	email.Send, err = NewEmailSmtpWithConfig(smtp)
-	if err != nil {
-		email.Log.Error("创建邮件发送对象失败", "error", err, "smtp", smtp)
-		return
-	}
-
-	// 邮件发送对象共用日志对象
-	email.Send.Log = email.Log
-
-	// 判断是否能够成功连接
-	if !email.IsHealth() {
-		err = errors.New("无法正常连接邮件服务器，请检查账号密码等配置是否正确")
-	}
 	return
 }
 
@@ -162,7 +140,8 @@ func (e *Email) IsHealth() bool {
 	}
 
 	// 获取发送器
-	sender, err := e.GetSender(*e.Send.Config)
+	smtp := e.Config.Smtp
+	sender, err := e.GetSender(smtp.Host, smtp.Port, smtp.Username, smtp.Password, smtp.IsSSL)
 	if err != nil {
 		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.Send.Config)
 		return false
@@ -177,14 +156,15 @@ func (e *Email) IsHealth() bool {
 }
 
 // GetSender 获取发送对象
-func (e *Email) GetSender(config ConfigSmtp) (sender gomail.SendCloser, err error) {
+func (e *Email) GetSender(host string, port int, username, password string, ssl bool) (sender gomail.SendCloser,
+	err error) {
 	// 创建拨号器
 	d := &gomail.Dialer{
-		Host:     config.SmtpHost,
-		Port:     config.SmtpPort,
-		Username: config.Email,
-		Password: config.Password,
-		SSL:      config.IsSSL,
+		Host:     host,
+		Port:     port,
+		Username: username,
+		Password: password,
+		SSL:      ssl,
 	}
 
 	// 拨号

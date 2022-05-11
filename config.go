@@ -7,12 +7,24 @@ import (
 
 // Config 配置类
 type Config struct {
-	Debug       bool      `yaml:"debug" json:"debug" env:"debug"`                         // 是否为debug模式                    // 是否为debug模式
-	LogFilePath string    `yaml:"log_file_path" json:"log_file_path" env:"log_file_path"` // 日志文件路径
-	SmtpConfigs []string  `yaml:"smtp_configs" json:"smtp_configs"`                       // 发送配置
-	ImapConfigs []string  `yaml:"imap_configs" json:"imap_configs"`                       // 接收配置
-	Fs          *embed.FS // 嵌入文件系统
-	IsUseFs     bool      `yaml:"is_use_fs" json:"is_use_fs" env:"is_use_fs"` // 是否使用fs嵌入文件系统
+	Debug          bool        `yaml:"debug" json:"debug" env:"debug"`           // 是否为debug模式                    // 是否为debug模式
+	LogFilePath    string      `yaml:"log_file_path" json:"log_file_path"`       // 日志文件路径
+	HeaderTagName  string      `yaml:"header_tag_name" json:"header_tag_name"`   // 请求头标记名
+	HeaderTagValue string      `yaml:"header_tag_value" json:"header_tag_value"` // 请求头标记值
+	Id             string      `yaml:"id" json:"id"`                             // 用于SMTP登录
+	Timeout        int         `yaml:"timeout" json:"timeout"`                   // 超时时间
+	Smtp           ConfigEmail `yaml:"smtp" json:"smtp"`                         // SMTP的配置
+	Imap           ConfigEmail `yaml:"imap" json:"imap"`                         // IMAP的配置
+}
+
+// ConfigEmail email服务器的相关配置
+type ConfigEmail struct {
+	Email    string `yaml:"email" json:"email"`         // 发送者的邮箱
+	Username string `yaml:"username" json:"username"`   // 发送者的名字
+	Password string `yaml:"password" json:"password"`   // 发送者的邮箱的校验密码（不一定是登陆密码）
+	Host     string `yaml:"smtp_host" json:"smtp_host"` // 邮箱服务器的主机地址（域名）
+	Port     int    `yaml:"smtp_port" json:"smtp_port"` // 端口
+	IsSSL    bool   `yaml:"is_ssl" json:"is_ssl"`       // 是否为SSL模式
 }
 
 type ConfigSmtp struct {

@@ -8,23 +8,31 @@ import (
 )
 
 func main() {
-	smtp := zdpgo_email.ConfigSmtp{
-		Debug:    true,
-		Username: "1156956636@qq.com",
-		Email:    "1156956636@qq.com",
-		Password: secret.SmtpPassword,
-		SmtpHost: "smtp.qq.com",
-		SmtpPort: 465,
-		IsSSL:    true, // QQ邮箱必须为true
-	}
-	e, err := zdpgo_email.NewWithSmtpConfig(smtp)
+	e, err := zdpgo_email.NewWithConfig(zdpgo_email.Config{
+		Debug: true,
+		Smtp: zdpgo_email.ConfigEmail{
+			Email:    "1156956636@qq.com",
+			Username: "1156956636@qq.com",
+			Password: secret.SmtpPassword,
+			Host:     "smtp.qq.com",
+			Port:     465,
+			IsSSL:    true,
+		},
+		Imap: zdpgo_email.ConfigEmail{
+			Email:    "1156956636@qq.com",
+			Username: "1156956636@qq.com",
+			Password: secret.ImapPassword,
+			Host:     "imap.qq.com",
+			Port:     993,
+			IsSSL:    true,
+		},
+	})
 	if err != nil {
 		fmt.Println("创建邮件对象失败", "error", err)
 		return
 	}
 
 	testFile, _ := os.Open("upload/test.txt")
-
 	var files = map[string]*os.File{
 		"upload/test.txt": testFile,
 	}

@@ -35,7 +35,7 @@ func (e *EmailSmtp) SendEmail(title, content, attach string, isHtml bool, emails
 	}
 
 	// 设置 sender 发送方 的邮箱 ， 此处可以填写自己的邮箱
-	e.From = fmt.Sprintf("%s <%s>", e.Config.Username, e.Config.Email)
+	e.From = fmt.Sprintf("%s <%s>", e.Config.Smtp.Username, e.Config.Smtp.Email)
 
 	// 设置 receiver 接收方 的邮箱  此处也可以填写自己的邮箱， 就是自己发邮件给自己
 	e.To = emails
@@ -69,12 +69,12 @@ func (e *EmailSmtp) SendEmail(title, content, attach string, isHtml bool, emails
 	}
 
 	//设置服务器相关的配置
-	addr := fmt.Sprintf("%s:%d", e.Config.SmtpHost, e.Config.SmtpPort)
+	addr := fmt.Sprintf("%s:%d", e.Config.Smtp.Host, e.Config.Smtp.Port)
 	err := e.Send(addr, smtp.PlainAuth(
 		e.Config.Id,
-		e.Config.Email,
-		e.Config.Password,
-		e.Config.SmtpHost))
+		e.Config.Smtp.Email,
+		e.Config.Smtp.Password,
+		e.Config.Smtp.Host))
 	if err != nil {
 		return err
 	}
@@ -179,6 +179,7 @@ func (e *EmailSmtp) SendWithTagAndReaders(readers map[string]*os.File, tagKey, t
 	}
 	err := e.SendGoMailWithReaders(readers, emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
+		e.Log.Error("SendWithTagAndReaders 使用标签和读取器列表发送邮件失败", "error", err)
 		return err
 	}
 	return nil
@@ -228,6 +229,7 @@ func (e *EmailSmtp) SendWithDefaultTagWithFs(fs *embed.FS, emailTitle string, em
 	toEmails ...string) error {
 	err := e.SendWithTagAndFs(fs, "", "", emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
+		e.Log.Error("SendWithDefaultTagWithFs 使用默认标签和嵌入文件系统发送邮件失败", "error", err)
 		return err
 	}
 	return nil
@@ -278,7 +280,7 @@ func (e *EmailSmtp) SendGoMail(emailTitle string, emailBody string, emailAttachm
 
 	// 设置邮件内容
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
-	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("From", e.Config.Smtp.Email)
 	m.SetHeader("To", toEmails...)
 	m.SetHeader("Subject", emailTitle)
 	m.SetBody("text/html", emailBody)
@@ -308,7 +310,7 @@ func (e *EmailSmtp) SendGoMailWithFs(fs *embed.FS, emailTitle string, emailBody 
 
 	// 设置邮件内容
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
-	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("From", e.Config.Smtp.Email)
 	m.SetHeader("To", toEmails...)
 	m.SetHeader("Subject", emailTitle)
 	m.SetBody("text/html", emailBody)
@@ -336,7 +338,7 @@ func (e *EmailSmtp) SendGoMailWithReaders(readers map[string]*os.File, emailTitl
 
 	// 设置邮件内容
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
-	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("From", e.Config.Smtp.Email)
 	m.SetHeader("To", toEmails...)
 	m.SetHeader("Subject", emailTitle)
 	m.SetBody("text/html", emailBody)
@@ -364,10 +366,11 @@ func (e *EmailSmtp) SendGoMailWithFiles(files map[string]*os.File, emailTitle st
 	m := gomail.NewMessageWithLog(e.Log)
 
 	// 设置邮件内容
-	e.Log.Debug("设置邮件内容", "tag", e.Config.HeaderTagName, "key", e.Config.HeaderTagValue, "from", e.Config.Email, "to",
+	e.Log.Debug("设置邮件内容", "tag", e.Config.HeaderTagName, "key", e.Config.HeaderTagValue, "from", e.Config.Smtp.Email,
+		"to",
 		toEmails, "title", emailTitle)
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
-	m.SetHeader("From", e.Config.Email)
+	m.SetHeader("From", e.Config.Smtp.Email)
 	m.SetHeader("To", toEmails...)
 	m.SetHeader("Subject", emailTitle)
 	m.SetBody("text/html", emailBody)
@@ -402,12 +405,10 @@ func (e *EmailSmtp) SendGoMailWithFiles(files map[string]*os.File, emailTitle st
 func (e *EmailSmtp) sendGoMail1(mailTo []string, subject string, body string) error {
 	// 设置邮箱主体
 	mailConn := map[string]string{
-		"user": e.Config.Email,    //发送人邮箱（邮箱以自己的为准）
-		"pass": e.Config.Password, //发送人邮箱的密码，现在可能会需要邮箱 开启授权密码后在pass填写授权码
-		"host": e.Config.SmtpHost, //邮箱服务器（此时用的是qq邮箱）
+		"user": e.Config.Smtp.Email,    //发送人邮箱（邮箱以自己的为准）
+		"pass": e.Config.Smtp.Password, //发送人邮箱的密码，现在可能会需要邮箱 开启授权密码后在pass填写授权码
+		"host": e.Config.Smtp.Host,     //邮箱服务器（此时用的是qq邮箱）
 	}
-	fmt.Println("密码", "pfqwwxvltpcshehh", e.Config.Password, "mailConn", mailConn)
-
 	m := gomail.NewMessage(
 		// 发送文本时设置编码，防止乱码。 如果txt文本设置了之后还是乱码，那可以将原txt文本在保存时就选择utf-8格式保存
 		gomail.SetEncoding(gomail.Base64),
