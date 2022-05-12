@@ -89,7 +89,12 @@ func MailDecodeHeader(s string) (string, error) {
 
 // SearchByTag 根据标签进行搜索
 func (e *EmailImap) SearchByTag(from string, startTime string, tagKey, tagValue string) ([]MailMessage, error) {
-	e.Config.HeaderTagName = tagKey
+	if tagKey == "" {
+		tagKey = e.Config.HeaderTagName
+	}
+	if tagValue == "" {
+		tagValue = e.Config.HeaderTagValue
+	}
 	bf := PreFilter{
 		From:           from,
 		SentSince:      startTime,

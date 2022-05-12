@@ -65,6 +65,9 @@ func NewWithConfig(config Config) (email *Email, err error) {
 	if config.HeaderTagValue == "" {
 		config.HeaderTagValue = "zhangdapeng520"
 	}
+	if config.CommonTitle == "" {
+		config.CommonTitle = "【ZDP-Go-Email】邮件发送测试（仅限学习研究，切勿滥用）"
+	}
 
 	// 邮件发送对象
 	if config.Smtp.Host != "" && config.Smtp.Port != 0 && config.Smtp.Password != "" {

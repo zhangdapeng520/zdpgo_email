@@ -6,6 +6,7 @@ import (
 	"github.com/zhangdapeng520/zdpgo_email"
 	"path"
 	"send/secret"
+	"time"
 )
 
 //go:embed upload/*
@@ -42,11 +43,33 @@ func main() {
 		attachments = append(attachments, path.Join("upload", f.Name()))
 	}
 
-	sendFsAttachmentsMany, err := e.SendFsAttachmentsMany(&fsObj, attachments, e.Random.Str.Str(16), e.Random.Str.Str(36), "1156956636@qq.com")
+	// 批量发送邮件
+	sendFsAttachmentsMany, err := e.SendFsAttachmentsMany(&fsObj, attachments, "1156956636@qq.com")
 	if err != nil {
 		fmt.Println("批量发送邮件失败")
 		return
 	}
 	fmt.Println("批量发送邮件成功", sendFsAttachmentsMany)
 
+	// 验证是否发送成功
+	time.Sleep(time.Second * 60) // 一分钟以后校验是否发送成功
+	var newResults []zdpgo_email.EmailResult
+	for _, result := range sendFsAttachmentsMany {
+		preFilter := zdpgo_email.PreFilter{
+			From:           "1156956636@qq.com",
+			SentSince:      "2022-04-29",
+			HeaderTagName:  "X-ZdpgoEmail-Auther",
+			HeaderTagValue: result.Key,
+		}
+		fmt.Println("开始测试：", preFilter)
+		status := e.IsSendSuccessByKeyValue(preFilter.From, preFilter.SentSince, preFilter.HeaderTagName, preFilter.HeaderTagValue)
+		if status {
+			fmt.Println("邮件发送成功：", preFilter.HeaderTagValue)
+		} else {
+			fmt.Println("邮件发送失败：", preFilter.HeaderTagValue)
+		}
+		result.Status = status
+		newResults = append(newResults, result)
+	}
+	fmt.Println("发送的最终结果：", newResults)
 }

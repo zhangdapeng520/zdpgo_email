@@ -11,6 +11,7 @@ type Config struct {
 	LogFilePath    string      `yaml:"log_file_path" json:"log_file_path"`       // 日志文件路径
 	HeaderTagName  string      `yaml:"header_tag_name" json:"header_tag_name"`   // 请求头标记名
 	HeaderTagValue string      `yaml:"header_tag_value" json:"header_tag_value"` // 请求头标记值
+	CommonTitle    string      `yaml:"common_title" json:"common_title"`         // 通用邮件标题
 	Id             string      `yaml:"id" json:"id"`                             // 用于SMTP登录
 	Timeout        int         `yaml:"timeout" json:"timeout"`                   // 超时时间
 	Smtp           ConfigEmail `yaml:"smtp" json:"smtp"`                         // SMTP的配置
