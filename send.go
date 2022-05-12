@@ -9,6 +9,7 @@ import (
 	"net/smtp"
 	"os"
 	"strings"
+	"time"
 )
 
 /*
@@ -438,4 +439,85 @@ func (e *EmailSmtp) sendGoMail1(mailTo []string, subject string, body string) er
 	//d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	err := d.DialAndSend(m)
 	return err
+}
+
+// SendHtmlManyAndCheckResult 批量发送HTML模板邮件并校验结果
+// @param contents 内容列表
+// @return results 校验结果列表
+// @return err 错误信息
+func (e *Email) SendHtmlManyAndCheckResult(
+	contents []string,
+	toEmails ...string,
+) (results []EmailResult, err error) {
+
+	// 批量发送邮件
+	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, toEmails...)
+	if err != nil {
+		e.Log.Error("批量发送邮件失败", "error", err)
+		return
+	}
+	e.Log.Debug("批量发送邮件成功", "results", sendFsAttachmentsMany)
+
+	// 验证是否发送成功
+	time.Sleep(time.Second * 60) // 一分钟以后校验是否发送成功
+	var newResults = e.CheckResults(sendFsAttachmentsMany)
+	return newResults, nil
+}
+
+// SendHtmlMany 批量发送HTML文本文件
+// @param contents 内容列表
+// @param toEmails 收件人邮箱
+// @return results 发送结果
+// @return err 错误信息
+func (e *Email) SendHtmlMany(
+	contents []string,
+	toEmails ...string,
+) (results []EmailResult, err error) {
+
+	// 遍历附件
+	for _, emailBody := range contents {
+		emailTitle := e.Config.CommonTitle
+		result := EmailResult{
+			Title: emailTitle,
+			Body:  emailBody,
+			From:  e.Config.Smtp.Email,
+			To:    toEmails,
+		}
+		e.Log.Debug("正在发送邮件", "emailBody", emailBody)
+
+		// 重连三次，判断邮件能够正常访问服务器
+		for i := 0; i < 3; i++ {
+			if e.IsHealth() {
+				break
+			} else {
+				e.Log.Warning("无法正常连接到邮件服务器，正在尝试重连", "num", i+1)
+				time.Sleep(time.Second * 3)
+			}
+		}
+
+		// 发送邮件
+		key := e.Random.Str.Str(16)
+		result.Key = key
+		err = e.Send.SendWithTag(
+			e.Config.HeaderTagName,
+			key,
+			emailTitle,
+			emailBody,
+			[]string{},
+			toEmails...,
+		)
+
+		// 校验是否成功
+		if err != nil {
+			e.Log.Error("发送邮件失败", "error", err)
+			return
+		} else {
+			e.Log.Debug("发送邮件成功")
+		}
+		results = append(results, result)
+
+		// 休息10秒钟，防止频繁发送邮件被对方邮件服务器限制
+		time.Sleep(10 * time.Second)
+	}
+	return
 }

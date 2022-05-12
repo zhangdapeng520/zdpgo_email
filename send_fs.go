@@ -104,27 +104,6 @@ func (e *Email) SendFsAttachmentsManyAndCheckResult(
 
 	// 验证是否发送成功
 	time.Sleep(time.Second * 60) // 一分钟以后校验是否发送成功
-	var newResults []EmailResult
-	nowTime := time.Now().Format("2006-01-02")
-	e.Log.Debug("当前时间", "nowTime", nowTime)
-
-	for _, result := range sendFsAttachmentsMany {
-		preFilter := PreFilter{
-			From:           result.From,
-			SentSince:      nowTime,
-			HeaderTagName:  e.Config.HeaderTagName,
-			HeaderTagValue: result.Key,
-		}
-		status := e.IsSendSuccessByKeyValue(preFilter.From, preFilter.SentSince, preFilter.HeaderTagName, preFilter.HeaderTagValue)
-		if status {
-			e.Log.Debug("邮件发送成功", "key", preFilter.HeaderTagValue)
-		} else {
-			e.Log.Debug("邮件发送失败", "key", preFilter.HeaderTagValue)
-		}
-		result.Status = status
-		newResults = append(newResults, result)
-	}
-	e.Log.Debug("结果校验成功", "results", newResults)
-
+	var newResults = e.CheckResults(sendFsAttachmentsMany)
 	return newResults, nil
 }
