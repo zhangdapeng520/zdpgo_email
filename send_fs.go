@@ -74,8 +74,7 @@ func (e *Email) SendFsAttachmentsMany(
 		}
 		results = append(results, result)
 
-		// 休息10秒钟，防止频繁发送邮件被对方邮件服务器限制
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Minute) // 一分钟一次，防止太快
 	}
 	return
 }
@@ -103,7 +102,6 @@ func (e *Email) SendFsAttachmentsManyAndCheckResult(
 	e.Log.Debug("批量发送邮件成功", "results", sendFsAttachmentsMany)
 
 	// 验证是否发送成功
-	time.Sleep(time.Second * 60) // 一分钟以后校验是否发送成功
 	var newResults = e.CheckResults(sendFsAttachmentsMany)
 	return newResults, nil
 }

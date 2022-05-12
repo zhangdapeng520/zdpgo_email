@@ -79,7 +79,8 @@ func (a *oauthBearerServer) fail(descr string) ([]byte, bool, error) {
 		Schemes: "bearer",
 	})
 	if err != nil {
-		panic(err) // wtf
+		//TODO: 处理错误
+		fmt.Println(err) // wtf
 	}
 	a.failErr = errors.New(descr)
 	return blob, false, nil
@@ -177,7 +178,8 @@ func (a *oauthBearerServer) Next(response []byte) (challenge []byte, done bool, 
 	if authzErr != nil {
 		blob, err := json.Marshal(authzErr)
 		if err != nil {
-			panic(err) // wtf
+			//TODO:处理错误
+			fmt.Println(err) // wtf
 		}
 		a.failErr = authzErr
 		return blob, false, nil

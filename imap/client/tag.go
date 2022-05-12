@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 )
 
 func randomString(n int) (string, error) {
@@ -18,7 +19,8 @@ func randomString(n int) (string, error) {
 func generateTag() string {
 	tag, err := randomString(4)
 	if err != nil {
-		panic(err)
+		//TODO: 处理错误
+		fmt.Println(err)
 	}
 	return tag
 }

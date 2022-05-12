@@ -298,7 +298,7 @@ func (c *conn) serve(conn Conn) (err error) {
 			})
 
 			stack := debug.Stack()
-			c.s.ErrorLog.Printf("panic serving %v: %v\n%s", c.Info().RemoteAddr, r, stack)
+			c.s.ErrorLog.Printf("serving %v: %v\n%s", c.Info().RemoteAddr, r, stack)
 
 			err = fmt.Errorf("%v", r)
 		}

@@ -32,6 +32,7 @@ func (e *Email) CheckResults(results []EmailResult) (newResults []EmailResult) {
 		}
 		result.Status = status
 		newResults = append(newResults, result)
+		time.Sleep(time.Minute) // 一分钟一次，防止太快
 	}
 	e.Log.Debug("结果校验成功", "results", newResults)
 	return

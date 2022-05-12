@@ -102,7 +102,7 @@ func HeaderFromMap(m map[string][]string) Header {
 // AddRaw adds the raw key, value pair to the header.
 //
 // The supplied byte slice should be a complete field in the "Key: Value" form
-// including trailing CRLF. If there is no comma in the input - AddRaw panics.
+// including trailing CRLF. If there is no comma in the input - AddRaw fmt.Printlns.
 // No changes are made to kv contents and it will be copied into WriteHeader
 // output as is.
 //
@@ -111,7 +111,7 @@ func HeaderFromMap(m map[string][]string) Header {
 func (h *Header) AddRaw(kv []byte) {
 	colon := bytes.IndexByte(kv, ':')
 	if colon == -1 {
-		panic("textproto: Header.AddRaw: missing colon")
+		fmt.Println("textproto: Header.AddRaw: missing colon")
 	}
 	k := textproto.CanonicalMIMEHeaderKey(string(trim(kv[:colon])))
 	v := trimAroundNewlines(kv[colon+1:])
@@ -275,10 +275,10 @@ func (fs *headerFields) Next() bool {
 
 func (fs *headerFields) index() int {
 	if fs.cur < 0 {
-		panic("message: HeaderFields method called before Next")
+		fmt.Println("message: HeaderFields method called before Next")
 	}
 	if fs.cur >= len(fs.h.l) {
-		panic("message: HeaderFields method called after Next returned false")
+		fmt.Println("message: HeaderFields method called after Next returned false")
 	}
 	return len(fs.h.l) - fs.cur - 1
 }
@@ -314,7 +314,7 @@ func (fs *headerFields) Del() {
 		}
 	}
 	if !ok {
-		panic("message: field not found in Header.m")
+		fmt.Println("message: field not found in Header.m")
 	}
 
 	fs.h.l = append(fs.h.l[:fs.index()], fs.h.l[fs.index()+1:]...)
@@ -345,10 +345,10 @@ func (fs *headerFieldsByKey) Next() bool {
 
 func (fs *headerFieldsByKey) index() int {
 	if fs.cur < 0 {
-		panic("message: headerfields.key or value called before next")
+		fmt.Println("message: headerfields.key or value called before next")
 	}
 	if fs.cur >= len(fs.h.m[fs.k]) {
-		panic("message: headerfields.key or value called after next returned false")
+		fmt.Println("message: headerfields.key or value called after next returned false")
 	}
 	return len(fs.h.m[fs.k]) - fs.cur - 1
 }
@@ -381,7 +381,7 @@ func (fs *headerFieldsByKey) Del() {
 		}
 	}
 	if !ok {
-		panic("message: field not found in Header.l")
+		fmt.Println("message: field not found in Header.l")
 	}
 
 	fs.h.m[fs.k] = append(fs.h.m[fs.k][:fs.index()], fs.h.m[fs.k][fs.index()+1:]...)

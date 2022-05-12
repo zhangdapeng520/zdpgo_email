@@ -402,7 +402,7 @@ func randomBoundary() string {
 	var buf [30]byte
 	_, err := io.ReadFull(rand.Reader, buf[:])
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	return fmt.Sprintf("%x", buf[:])
 }
