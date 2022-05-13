@@ -261,7 +261,7 @@ func (e *EmailSmtp) SendWithDefaultTagWithFiles(files map[string]*os.File, email
 // SendWithKey 生成一个随机的key作为邮件的标识进行发送
 func (e *EmailSmtp) SendWithKey(emailTitle string, emailBody string, emailAttachments []string,
 	toEmails ...string) (string, error) {
-	key := e.random.Str.Str(32)
+	key := e.random.Str(32)
 	err := e.SendWithTag("", key, emailTitle, emailBody, emailAttachments, toEmails...)
 	if err != nil {
 		return "", err
@@ -443,15 +443,17 @@ func (e *EmailSmtp) sendGoMail1(mailTo []string, subject string, body string) er
 
 // SendHtmlManyAndCheckResult 批量发送HTML模板邮件并校验结果
 // @param contents 内容列表
+// @param internalSeconds 发送没封邮件的间隔时间，防止发送过快
 // @return results 校验结果列表
 // @return err 错误信息
 func (e *Email) SendHtmlManyAndCheckResult(
 	contents []string,
+	internalSeconds int,
 	toEmails ...string,
 ) (results []EmailResult, err error) {
 
 	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, toEmails...)
+	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, internalSeconds, toEmails...)
 	if err != nil {
 		e.Log.Error("批量发送邮件失败", "error", err)
 		return
@@ -470,6 +472,7 @@ func (e *Email) SendHtmlManyAndCheckResult(
 // @return err 错误信息
 func (e *Email) SendHtmlMany(
 	contents []string,
+	internalSeconds int,
 	toEmails ...string,
 ) (results []EmailResult, err error) {
 
@@ -477,10 +480,11 @@ func (e *Email) SendHtmlMany(
 	for _, emailBody := range contents {
 		emailTitle := e.Config.CommonTitle
 		result := EmailResult{
-			Title: emailTitle,
-			Body:  emailBody,
-			From:  e.Config.Smtp.Email,
-			To:    toEmails,
+			Title:     emailTitle,
+			Body:      emailBody,
+			From:      e.Config.Smtp.Email,
+			To:        toEmails,
+			StartTime: int(time.Now().Unix()),
 		}
 		e.Log.Debug("正在发送邮件", "emailBody", emailBody)
 
@@ -495,7 +499,7 @@ func (e *Email) SendHtmlMany(
 		}
 
 		// 发送邮件
-		key := e.Random.Str.Str(16)
+		key := e.Random.Str(16)
 		result.Key = key
 		err = e.Send.SendWithTag(
 			e.Config.HeaderTagName,
@@ -508,14 +512,19 @@ func (e *Email) SendHtmlMany(
 
 		// 校验是否成功
 		if err != nil {
+			result.SendStatus = false
 			e.Log.Error("发送邮件失败", "error", err)
-			return
 		} else {
+			result.SendStatus = true
 			e.Log.Debug("发送邮件成功")
 		}
+		result.EndTime = int(time.Now().Unix())
 		results = append(results, result)
 
-		time.Sleep(time.Minute) // 一分钟一次，防止太快
+		if internalSeconds <= 0 {
+			internalSeconds = 1
+		}
+		time.Sleep(time.Duration(internalSeconds) * time.Second) // 指定间隔时间，防止过快发送
 	}
 	return
 }

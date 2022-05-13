@@ -31,7 +31,7 @@ func (e *Email) SendFsAttachmentsMany(
 	// 遍历附件
 	for _, file := range attachments {
 		emailTitle := e.Config.CommonTitle
-		emailBody := "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str.Str(128)
+		emailBody := "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(128)
 		result := EmailResult{
 			AttachmentName: filepath.Base(file),
 			AttachmentPath: file,
@@ -53,7 +53,7 @@ func (e *Email) SendFsAttachmentsMany(
 		}
 
 		// 发送邮件
-		key := e.Random.Str.Str(16)
+		key := e.Random.Str(16)
 		result.Key = key
 		err = e.Send.SendWithTagAndFs(
 			fsObj,

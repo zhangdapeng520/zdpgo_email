@@ -30,7 +30,7 @@ func (e *Email) CheckResults(results []EmailResult) (newResults []EmailResult) {
 		} else {
 			e.Log.Debug("邮件发送失败", "key", preFilter.HeaderTagValue)
 		}
-		result.Status = status
+		result.ReceiveStatus = status
 		newResults = append(newResults, result)
 		time.Sleep(time.Minute) // 一分钟一次，防止太快
 	}
