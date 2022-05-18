@@ -10,33 +10,19 @@ import (
 	"time"
 )
 
-// A Dialer is a dialer to an SMTP server.
+// Dialer SMTP的邮件拨号器
 type Dialer struct {
-	// Host represents the host of the SMTP server.
-	Host string
-	// Port represents the port of the SMTP server.
-	Port int
-	// Username is the username to use to authenticate to the SMTP server.
-	Username string
-	// Password is the password to use to authenticate to the SMTP server.
-	Password string
-	// Auth represents the authentication mechanism used to authenticate to the
-	// SMTP server.
-	Auth smtp.Auth
-	// SSL defines whether an SSL connection is used. It should be false in
-	// most cases since the authentication mechanism should use the STARTTLS
-	// extension instead.
-	SSL bool
-	// TSLConfig represents the TLS configuration used for the TLS (when the
-	// STARTTLS extension is used) or SSL connection.
-	TLSConfig *tls.Config
-	// LocalName is the hostname sent to the SMTP server with the HELO command.
-	// By default, "localhost" is sent.
-	LocalName string
+	Host      string      // SMTP服务地址
+	Port      int         // SMTP端口号
+	Username  string      // 用户名
+	Password  string      // 密码
+	Auth      smtp.Auth   // 权限
+	SSL       bool        // 是否开启SSL
+	TLSConfig *tls.Config // SSL配置
+	LocalName string      // 本地服务名称，默认“localhost”
 }
 
-// NewDialer returns a new SMTP Dialer. The given parameters are used to connect
-// to the SMTP server.
+// NewDialer 创建拨号器
 func NewDialer(host string, port int, username, password string) *Dialer {
 	return &Dialer{
 		Host:     host,
@@ -47,40 +33,45 @@ func NewDialer(host string, port int, username, password string) *Dialer {
 	}
 }
 
-// NewPlainDialer returns a new SMTP Dialer. The given parameters are used to
-// connect to the SMTP server.
-//
-// Deprecated: Use NewDialer instead.
-func NewPlainDialer(host string, port int, username, password string) *Dialer {
-	return NewDialer(host, port, username, password)
-}
+// Dial 使用拨号器进行拨号
+func (d *Dialer) Dial() (sender SendCloser, err error) {
+	var (
+		conn net.Conn
+		c    smtpClient
+	)
 
-// Dial dials and authenticates to an SMTP server. The returned SendCloser
-// should be closed when done using it.
-func (d *Dialer) Dial() (SendCloser, error) {
-	conn, err := netDialTimeout("tcp", addr(d.Host, d.Port), 10*time.Second)
+	// 拨号并进行超时控制
+	conn, err = netDialTimeout("tcp", addr(d.Host, d.Port), 10*time.Second)
 	if err != nil {
-		return nil, err
+		Log.Error("拨号失败", "error", err)
+		return
 	}
 
+	// 如果开启了SSL，进行https连接
 	if d.SSL {
 		conn = tlsClient(conn, d.tlsConfig())
 	}
 
-	c, err := smtpNewClient(conn, d.Host)
+	// 创建SMTP连接
+	c, err = smtpNewClient(conn, d.Host)
 	if err != nil {
-		return nil, err
+		Log.Error("创建SMTP连接失败", "error", err)
+		return
 	}
 
+	// 如果定义了本地名称
 	if d.LocalName != "" {
-		if err := c.Hello(d.LocalName); err != nil {
-			return nil, err
+		// 使用SMTP连接打招呼，查看是否能通信
+		if err = c.Hello(d.LocalName); err != nil {
+			Log.Error("使用SMTP连接打招呼，查看是否能通信失败", "error", err, "localName", d.LocalName)
+			return
 		}
 	}
 
+	// 如果没有启用SSL
 	if !d.SSL {
 		if ok, _ := c.Extension("STARTTLS"); ok {
-			if err := c.StartTLS(d.tlsConfig()); err != nil {
+			if err = c.StartTLS(d.tlsConfig()); err != nil {
 				c.Close()
 				return nil, err
 			}
@@ -121,6 +112,7 @@ func (d *Dialer) tlsConfig() *tls.Config {
 	return d.TLSConfig
 }
 
+// 拼接地址
 func addr(host string, port int) string {
 	return fmt.Sprintf("%s:%d", host, port)
 }
@@ -189,8 +181,9 @@ var (
 	}
 )
 
+// SMTP连接对象
 type smtpClient interface {
-	Hello(string) error
+	Hello(string) error // 打招呼
 	Extension(string) (bool, string)
 	StartTLS(*tls.Config) error
 	Auth(smtp.Auth) error

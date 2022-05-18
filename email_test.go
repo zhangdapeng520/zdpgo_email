@@ -14,6 +14,33 @@ import (
 @Description: 测试email的相关功能
 */
 
+func getEmail() *Email {
+	Yaml := zdpgo_yaml.New()
+	var smtp ConfigSmtp
+	Yaml.ReadConfig("config/config_smtp.yaml", &smtp)
+	Yaml.ReadConfig("config/secret/config_smtp.yaml", &smtp)
+
+	// 正常情况
+	e, err := NewWithConfig(Config{
+		Debug: true,
+		Smtp: ConfigEmail{
+			Email:    smtp.Email,
+			Username: smtp.Username,
+			Password: smtp.Password,
+			Host:     smtp.SmtpHost,
+			Port:     smtp.SmtpPort,
+			IsSSL:    smtp.IsSSL,
+		},
+	})
+
+	if err != nil {
+		fmt.Println("获取邮件失败", "error", err)
+		return nil
+	}
+
+	return e
+}
+
 // 测试获取发送对象功能
 func TestEmail_GetSender(t *testing.T) {
 	// 创建邮件对象
@@ -23,11 +50,8 @@ func TestEmail_GetSender(t *testing.T) {
 	}
 
 	// 获取发送器
-	Yaml := zdpgo_yaml.New()
-	var smtConfig ConfigSmtp
-
 	// 异常情况，配置都为空，无法正常拨号
-	sender, err := e.GetSender(smtConfig)
+	sender, err := e.GetSender()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -35,9 +59,8 @@ func TestEmail_GetSender(t *testing.T) {
 	fmt.Println("发送器1：", sender)
 
 	// 正常情况
-	Yaml.ReadConfig("config/config_smtp.yaml", &smtConfig)
-	Yaml.ReadConfig("config/secret/config_smtp.yaml", &smtConfig)
-	sender, err = e.GetSender(smtConfig)
+	e = getEmail()
+	sender, err = e.GetSender()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -51,13 +74,7 @@ func TestEmail_IsHealth(t *testing.T) {
 	e, _ := New()
 	fmt.Println(e.IsHealth())
 
-	// 正常情况
-	e, _ = NewWithConfig(Config{
-		SmtpConfigs: []string{"config/config_smtp.yaml", "config/secret/config_smtp.yaml"},
-		ImapConfigs: nil,
-		Debug:       true,
-		Fs:          nil,
-		IsUseFs:     false,
-	})
+	// 读取配置
+	e = getEmail()
 	fmt.Println(e.IsHealth())
 }

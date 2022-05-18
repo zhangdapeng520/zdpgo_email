@@ -54,9 +54,8 @@ func NewWithConfig(config Config) (email *Email, err error) {
 		logConfig.IsShowConsole = true
 	}
 	email.Log = zdpgo_log.NewWithConfig(logConfig)
-	if config.Debug {
-		email.Log.Debug("创建email日志对象成功", "config", config)
-	}
+	email.Log.Debug("创建email日志对象成功", "config", config)
+	gomail.Log = email.Log // 初始化gomail中的日志对象
 
 	// 标识符
 	if config.HeaderTagName == "" {
@@ -143,8 +142,7 @@ func (e *Email) IsHealth() bool {
 	}
 
 	// 获取发送器
-	smtp := e.Config.Smtp
-	sender, err := e.GetSender(smtp.Host, smtp.Port, smtp.Username, smtp.Password, smtp.IsSSL)
+	sender, err := e.GetSender()
 	if err != nil {
 		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.Send.Config)
 		return false
@@ -159,15 +157,14 @@ func (e *Email) IsHealth() bool {
 }
 
 // GetSender 获取发送对象
-func (e *Email) GetSender(host string, port int, username, password string, ssl bool) (sender gomail.SendCloser,
-	err error) {
+func (e *Email) GetSender() (sender gomail.SendCloser, err error) {
 	// 创建拨号器
 	d := &gomail.Dialer{
-		Host:     host,
-		Port:     port,
-		Username: username,
-		Password: password,
-		SSL:      ssl,
+		Host:     e.Config.Smtp.Host,
+		Port:     e.Config.Smtp.Port,
+		Username: e.Config.Smtp.Email,
+		Password: e.Config.Smtp.Password,
+		SSL:      e.Config.Smtp.IsSSL,
 	}
 
 	// 拨号

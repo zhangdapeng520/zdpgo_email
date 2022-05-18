@@ -3,11 +3,11 @@ package mail
 import (
 	"bytes"
 	"fmt"
+	"github.com/zhangdapeng520/zdpgo_email/gomail"
 	"github.com/zhangdapeng520/zdpgo_email/imap"
 	"github.com/zhangdapeng520/zdpgo_email/imap/client"
 	"github.com/zhangdapeng520/zdpgo_email/message"
 	"github.com/zhangdapeng520/zdpgo_email/message/mail"
-	"gopkg.in/gomail.v2"
 	"io"
 	"io/ioutil"
 	"log"
