@@ -122,6 +122,9 @@ func NewWithConfig(config Config) (email *Email, err error) {
 	}
 
 	// 保存配置
+	if config.SendSleepSeconds <= 0 {
+		config.SendSleepSeconds = 1
+	}
 	email.Config = &config
 	if email.Send != nil {
 		email.Send.Config = &config

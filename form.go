@@ -15,6 +15,7 @@ type EmailResult struct {
 	Body           string   `json:"body"`            // 邮件内容
 	From           string   `json:"from"`            // 发件人
 	To             []string `json:"to"`              // 收件人
+	Attachments    []string `json:"attachments"`     // 附件列表
 	AttachmentName string   `json:"attachment_name"` // 附件名称
 	AttachmentPath string   `json:"attachment_path"` // 附件路径
 	StartTime      int      `json:"start_time"`      // 发送邮件的开始时间

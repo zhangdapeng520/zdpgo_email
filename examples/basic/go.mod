@@ -1,8 +1,8 @@
-module send
+module basic
 
 go 1.17
 
-require github.com/zhangdapeng520/zdpgo_email v1.0.3
+require github.com/zhangdapeng520/zdpgo_email v1.0.9
 
 require (
 	github.com/zhangdapeng520/zdpgo_log v1.3.4 // indirect
@@ -12,4 +12,4 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )
 
-replace github.com/zhangdapeng520/zdpgo_email v1.0.3 => ../../../zdpgo_email
+replace github.com/zhangdapeng520/zdpgo_email v1.0.9 => ../../../zdpgo_email

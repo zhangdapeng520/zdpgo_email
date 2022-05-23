@@ -446,12 +446,11 @@ func (e *EmailSmtp) SendGoMailWithFiles(files map[string]*os.File, emailTitle st
 // @return err 错误信息
 func (e *Email) SendHtmlManyAndCheckResult(
 	contents []string,
-	internalSeconds int,
 	toEmails ...string,
 ) (results []EmailResult, err error) {
 
 	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, internalSeconds, toEmails...)
+	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, toEmails...)
 	if err != nil {
 		e.Log.Error("批量发送邮件失败", "error", err)
 		return
@@ -470,7 +469,6 @@ func (e *Email) SendHtmlManyAndCheckResult(
 // @return err 错误信息
 func (e *Email) SendHtmlMany(
 	contents []string,
-	internalSeconds int,
 	toEmails ...string,
 ) (results []EmailResult, err error) {
 
@@ -518,11 +516,7 @@ func (e *Email) SendHtmlMany(
 		}
 		result.EndTime = int(time.Now().Unix())
 		results = append(results, result)
-
-		if internalSeconds <= 0 {
-			internalSeconds = 1
-		}
-		time.Sleep(time.Duration(internalSeconds) * time.Second) // 指定间隔时间，防止过快发送
+		time.Sleep(time.Duration(e.Config.SendSleepSeconds) * time.Second) // 指定间隔时间，防止过快发送
 	}
 	return
 }
@@ -535,15 +529,9 @@ func (e *Email) SendHtmlMany(
 // @return results 发送结果
 // @return err 错误信息
 func (e *Email) SendAttachmentMany(
-	sleepSeconds int,
 	attachments []string,
 	toEmails ...string,
 ) (results []EmailResult, err error) {
-	// 确保休眠时间是正确的
-	if sleepSeconds <= 0 {
-		sleepSeconds = 1
-	}
-
 	// 遍历附件
 	for _, file := range attachments {
 		emailTitle := e.Config.CommonTitle
@@ -583,13 +571,68 @@ func (e *Email) SendAttachmentMany(
 		// 校验是否成功
 		if err != nil {
 			e.Log.Error("发送邮件失败", "error", err)
-			return
+			result.SendStatus = false
 		} else {
+			result.SendStatus = true
 			e.Log.Debug("发送邮件成功")
 		}
 		results = append(results, result)
-
-		time.Sleep(time.Duration(sleepSeconds) * time.Second) // 休眠一下
+		time.Sleep(time.Duration(e.Config.SendSleepSeconds) * time.Second) // 休眠一下
 	}
 	return
+}
+
+// SendAttachments 发送附件，附件可以有多个
+// @param attachments 附件列表
+// @param emailTitle 邮件标题
+// @param emailBody 邮件内容
+// @param toEmails 收件人邮箱
+// @return results 发送结果
+// @return err 错误信息
+func (e *Email) SendAttachments(emailTitle, emailBody string, attachments []string, toEmails ...string) (
+	EmailResult, error) {
+	result := EmailResult{}
+
+	// 无法正常连接服务器
+	if !e.IsHealth() {
+		return result, errors.New("无法正常连接邮件服务器")
+	}
+
+	// 发送邮件
+	if emailTitle == "" {
+		emailTitle = e.Config.CommonTitle
+	}
+	if emailBody == "" {
+		emailBody = "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(128)
+	}
+	key := e.Random.Str(16)
+	err := e.Send.SendWithTag(
+		e.Config.HeaderTagName,
+		key,
+		emailTitle,
+		emailBody,
+		attachments,
+		toEmails...,
+	)
+
+	// 准备响应结果
+	result = EmailResult{
+		Attachments: attachments,
+		Title:       emailTitle,
+		Body:        emailBody,
+		From:        e.Config.Smtp.Email,
+		To:          toEmails,
+	}
+
+	// 校验是否成功
+	if err != nil {
+		e.Log.Error("发送邮件失败", "error", err)
+		result.SendStatus = false
+	} else {
+		result.SendStatus = true
+		e.Log.Debug("发送邮件成功")
+	}
+
+	// 返回发送结果
+	return result, nil
 }

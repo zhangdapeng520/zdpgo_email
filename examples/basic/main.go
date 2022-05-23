@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"basic/search"
+	"basic/secret"
+	"basic/send"
 	"github.com/zhangdapeng520/zdpgo_email"
-	"send/secret"
 )
 
 func main() {
@@ -26,19 +27,8 @@ func main() {
 			IsSSL:    true,
 		},
 	})
-	contents := []string{
-		"https://www.baidu.com",
-		"https://www.sogo.com",
-		"https://www.google.com",
-	}
-	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendHtmlManyAndCheckResult(contents, "1156956636@qq.com")
-	if err != nil {
-		fmt.Println("批量发送邮件失败")
-		return
-	}
-	fmt.Println("批量发送邮件成功", sendFsAttachmentsMany)
-	for _, result := range sendFsAttachmentsMany {
-		fmt.Println(result.Status, result.Title, result.Key)
-	}
+	send.SendHtmlMany(e)       // 批量发送HTML邮件
+	send.SendAttachmentMany(e) // 批量发送附件邮件
+	send.SendAttachments(e)    // 发送批量附件邮件
+	search.Search(e)           // 搜索
 }
