@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	e, _ := zdpgo_email.NewWithConfig(zdpgo_email.Config{
+	e, _ := zdpgo_email.NewWithConfig(&zdpgo_email.Config{
 		Debug: true,
 		Smtp: zdpgo_email.ConfigEmail{
 			Email:    "1156956636@qq.com",

@@ -3,7 +3,6 @@ package zdpgo_email
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 )
 
 func randomString(n int) (string, error) {
@@ -19,8 +18,7 @@ func randomString(n int) (string, error) {
 func generateTag() string {
 	tag, err := randomString(4)
 	if err != nil {
-		//TODO: 处理错误
-		fmt.Println(err)
+		Log.Error("生成tag失败", "error", err)
 	}
 	return tag
 }
