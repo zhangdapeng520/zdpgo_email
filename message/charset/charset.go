@@ -1,7 +1,3 @@
-// Package charset provides functions to decode and encode charsets.
-//
-// It imports all supported charsets, which adds about 1MiB to binaries size.
-// Importing the package automatically sets message.CharsetReader.
 package charset
 
 import (

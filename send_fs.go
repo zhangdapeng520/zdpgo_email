@@ -1,8 +1,6 @@
 package zdpgo_email
 
 import (
-	"embed"
-	"path/filepath"
 	"time"
 )
 
@@ -22,25 +20,24 @@ import (
 // @param toEmails 收件人邮箱
 // @return results 发送结果
 // @return err 错误信息
-func (e *Email) SendFsAttachmentsMany(
-	fsObj *embed.FS,
-	attachments []string,
-	toEmails ...string,
-) (results []EmailResult, err error) {
+func (e *Email) SendFsAttachmentsMany(reqList []EmailRequest) (results []EmailResult, err error) {
 
 	// 遍历附件
-	for _, file := range attachments {
-		emailTitle := e.Config.CommonTitle
-		emailBody := "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(128)
-		result := EmailResult{
-			AttachmentName: filepath.Base(file),
-			AttachmentPath: file,
-			Title:          emailTitle,
-			Body:           emailBody,
-			From:           e.Config.Smtp.Email,
-			To:             toEmails,
+	for _, req := range reqList {
+		if req.Title == "" {
+			req.Title = e.Config.CommonTitle
 		}
-		e.Log.Debug("正在发送邮件", "file", file)
+		if req.Body == "" {
+			req.Body = "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(128)
+		}
+		result := EmailResult{
+			Attachments: req.Attachments,
+			Title:       req.Title,
+			Body:        req.Body,
+			From:        e.Config.Smtp.Email,
+			To:          req.ToEmails,
+		}
+		e.Log.Debug("正在发送邮件", "file", req.Attachments)
 
 		// 重连三次，判断邮件能够正常访问服务器
 		for i := 0; i < 3; i++ {
@@ -55,15 +52,7 @@ func (e *Email) SendFsAttachmentsMany(
 		// 发送邮件
 		key := e.Random.Str(16)
 		result.Key = key
-		err = e.Send.SendWithTagAndFs(
-			fsObj,
-			e.Config.HeaderTagName,
-			key,
-			emailTitle,
-			emailBody,
-			[]string{file},
-			toEmails...,
-		)
+		err = e.Send.SendWithTagAndFs(e.Config.HeaderTagName, key, req)
 
 		// 校验是否成功
 		if err != nil {
@@ -76,6 +65,7 @@ func (e *Email) SendFsAttachmentsMany(
 
 		time.Sleep(time.Minute) // 一分钟一次，防止太快
 	}
+
 	return
 }
 
@@ -87,14 +77,10 @@ func (e *Email) SendFsAttachmentsMany(
 // @param toEmails 收件人邮箱
 // @return results 发送结果
 // @return err 错误信息
-func (e *Email) SendFsAttachmentsManyAndCheckResult(
-	fsObj *embed.FS,
-	attachments []string,
-	toEmails ...string,
-) (results []EmailResult, err error) {
+func (e *Email) SendFsAttachmentsManyAndCheckResult(reqList []EmailRequest) (results []EmailResult, err error) {
 
 	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendFsAttachmentsMany(fsObj, attachments, toEmails...)
+	sendFsAttachmentsMany, err := e.SendFsAttachmentsMany(reqList)
 	if err != nil {
 		e.Log.Error("批量发送邮件失败", "error", err)
 		return

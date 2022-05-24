@@ -473,7 +473,7 @@ func (m *Message) appendFileWithFiles(files map[string]*os.File, list []*Attachm
 	return append(list, f)
 }
 
-// Attach attaches the files to the email.
+// Attach 添加邮件附件
 func (m *Message) Attach(filename string, settings ...FileSetting) {
 	m.attachments = m.appendFile(m.attachments, filename, settings)
 }

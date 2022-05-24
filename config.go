@@ -7,16 +7,16 @@ import (
 
 // Config 配置类
 type Config struct {
-	Debug            bool        `yaml:"debug" json:"debug" env:"debug"`               // 是否为debug模式                    // 是否为debug模式
-	LogFilePath      string      `yaml:"log_file_path" json:"log_file_path"`           // 日志文件路径
-	HeaderTagName    string      `yaml:"header_tag_name" json:"header_tag_name"`       // 请求头标记名
-	HeaderTagValue   string      `yaml:"header_tag_value" json:"header_tag_value"`     // 请求头标记值
-	CommonTitle      string      `yaml:"common_title" json:"common_title"`             // 通用邮件标题
-	Id               string      `yaml:"id" json:"id"`                                 // 用于SMTP登录
-	SendSleepSeconds int         `yaml:"send_sleep_seconds" json:"send_sleep_seconds"` // 发送邮件的间隔休眠时间
-	Timeout          int         `yaml:"timeout" json:"timeout"`                       // 超时时间
-	Smtp             ConfigEmail `yaml:"smtp" json:"smtp"`                             // SMTP的配置
-	Imap             ConfigEmail `yaml:"imap" json:"imap"`                             // IMAP的配置
+	Debug                bool        `yaml:"debug" json:"debug" env:"debug"`                       // 是否为debug模式                    // 是否为debug模式
+	LogFilePath          string      `yaml:"log_file_path" json:"log_file_path"`                   // 日志文件路径
+	HeaderTagName        string      `yaml:"header_tag_name" json:"header_tag_name"`               // 请求头标记名
+	HeaderTagValue       string      `yaml:"header_tag_value" json:"header_tag_value"`             // 请求头标记值
+	CommonTitle          string      `yaml:"common_title" json:"common_title"`                     // 通用邮件标题
+	Id                   string      `yaml:"id" json:"id"`                                         // 用于SMTP登录
+	SendSleepMillisecond int         `yaml:"send_sleep_millisecond" json:"send_sleep_millisecond"` // 发送邮件的间隔休眠时间
+	Timeout              int         `yaml:"timeout" json:"timeout"`                               // 超时时间
+	Smtp                 ConfigEmail `yaml:"smtp" json:"smtp"`                                     // SMTP的配置
+	Imap                 ConfigEmail `yaml:"imap" json:"imap"`                                     // IMAP的配置
 }
 
 // ConfigEmail email服务器的相关配置

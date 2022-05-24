@@ -50,7 +50,7 @@ func IsGBK(data []byte) bool {
 	return true
 }
 
-// Convert gbk等转为utf-8 bytes
+// ConvertToUTF8 gbk等转为utf-8 bytes
 func ConvertToUTF8(b []byte, charset string) ([]byte, error) {
 	charset = strings.ToLower(charset)
 	switch charset {

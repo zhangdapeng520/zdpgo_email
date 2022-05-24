@@ -1,5 +1,4 @@
-// A writer that wraps long text lines to a specified length.
-package textwrapper
+package message
 
 import (
 	"io"
@@ -45,9 +44,8 @@ func (w *writer) Write(b []byte) (N int, err error) {
 	return
 }
 
-// Returns a writer that splits its input into multiple parts that have the same
-// length and adds a separator between these parts.
-func New(w io.Writer, sep string, l int) io.Writer {
+// NewWrapper 返回一个写入器，该写入器将其输入分成具有相同长度的多个部分，并在这些部分之间添加分隔符。
+func NewWrapper(w io.Writer, sep string, l int) io.Writer {
 	return &writer{
 		Len:      l,
 		sepBytes: []byte(sep),
@@ -55,7 +53,7 @@ func New(w io.Writer, sep string, l int) io.Writer {
 	}
 }
 
-// Creates a RFC822 text wrapper. It adds a CRLF (ie. \r\n) each 76 characters.
+// NewRFC822 创建一个RFC822文本包装器。它添加了一个CRLF(例如。\r\n)每个76个字符。
 func NewRFC822(w io.Writer) io.Writer {
-	return New(w, "\r\n", 76)
+	return NewWrapper(w, "\r\n", 76)
 }

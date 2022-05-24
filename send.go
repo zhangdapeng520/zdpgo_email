@@ -1,13 +1,11 @@
 package zdpgo_email
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
 	"net/smtp"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -141,8 +139,7 @@ func (e *EmailSmtp) SendTextAndAttach(title, content, attach string, emails ...s
 }
 
 // SendWithTag 通过标签发送邮件
-func (e *EmailSmtp) SendWithTag(tagKey, tagValue, emailTitle string, emailBody string, emailAttachments []string,
-	toEmails ...string) error {
+func (e *EmailSmtp) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
 
 	// 检查key是否符合规范
 	if tagKey != "" {
@@ -165,17 +162,16 @@ func (e *EmailSmtp) SendWithTag(tagKey, tagValue, emailTitle string, emailBody s
 	}
 
 	// 发送邮件
-	err := e.SendGoMail(emailTitle, emailBody, emailAttachments, toEmails...)
+	err := e.SendGoMail(req)
 	if err != nil {
+		e.Log.Error("发送邮件失败", "error", err)
 		return err
 	}
 	return nil
 }
 
 // SendWithTagAndFs 使用标签和嵌入文件系统发送邮件
-func (e *EmailSmtp) SendWithTagAndFs(fs *embed.FS, tagKey, tagValue, emailTitle string, emailBody string,
-	emailAttachments []string,
-	toEmails ...string) error {
+func (e *EmailSmtp) SendWithTagAndFs(tagKey, tagValue string, req EmailRequest) error {
 	if tagKey != "" {
 		tagArr := strings.Split(tagKey, "-")
 		if len(tagArr) != 3 {
@@ -188,7 +184,7 @@ func (e *EmailSmtp) SendWithTagAndFs(fs *embed.FS, tagKey, tagValue, emailTitle 
 	if tagValue != "" {
 		e.Config.HeaderTagValue = tagValue
 	}
-	err := e.SendGoMailWithFs(fs, emailTitle, emailBody, emailAttachments, toEmails...)
+	err := e.SendGoMailWithFs(req)
 	if err != nil {
 		return err
 	}
@@ -196,10 +192,7 @@ func (e *EmailSmtp) SendWithTagAndFs(fs *embed.FS, tagKey, tagValue, emailTitle 
 }
 
 // SendWithTagAndReaders 使用标签和读取器列表发送邮件
-func (e *EmailSmtp) SendWithTagAndReaders(readers map[string]*os.File, tagKey, tagValue, emailTitle string,
-	emailBody string,
-	emailAttachments []string,
-	toEmails ...string) error {
+func (e *EmailSmtp) SendWithTagAndReaders(tagKey, tagValue string, req EmailRequest) error {
 	if tagKey != "" {
 		tagArr := strings.Split(tagKey, "-")
 		if len(tagArr) != 3 {
@@ -212,7 +205,7 @@ func (e *EmailSmtp) SendWithTagAndReaders(readers map[string]*os.File, tagKey, t
 	if tagValue != "" {
 		e.Config.HeaderTagValue = tagValue
 	}
-	err := e.SendGoMailWithReaders(readers, emailTitle, emailBody, emailAttachments, toEmails...)
+	err := e.SendGoMailWithReaders(req)
 	if err != nil {
 		e.Log.Error("SendWithTagAndReaders 使用标签和读取器列表发送邮件失败", "error", err)
 		return err
@@ -221,8 +214,7 @@ func (e *EmailSmtp) SendWithTagAndReaders(readers map[string]*os.File, tagKey, t
 }
 
 // SendWithTagAndFiles 使用标签和文件列表发送邮件
-func (e *EmailSmtp) SendWithTagAndFiles(files map[string]*os.File, tagKey, tagValue, emailTitle string,
-	emailBody string, toEmails ...string) error {
+func (e *EmailSmtp) SendWithTagAndFiles(tagKey, tagValue string, req EmailRequest) error {
 	e.Log.Debug("SendWithTagAndFiles 使用标签和文件列表发送邮件")
 
 	// 处理标签和校验Key
@@ -240,7 +232,7 @@ func (e *EmailSmtp) SendWithTagAndFiles(files map[string]*os.File, tagKey, tagVa
 	}
 
 	// 发送邮件
-	err := e.SendGoMailWithFiles(files, emailTitle, emailBody, toEmails...)
+	err := e.SendGoMailWithFiles(req)
 	if err != nil {
 		e.Log.Error("使用标签和文件列表发送邮件失败", "error", err)
 		return err
@@ -249,9 +241,8 @@ func (e *EmailSmtp) SendWithTagAndFiles(files map[string]*os.File, tagKey, tagVa
 }
 
 // SendWithDefaultTag 使用默认的tag和value发送邮件
-func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emailAttachments []string,
-	toEmails ...string) error {
-	err := e.SendWithTag("", "", emailTitle, emailBody, emailAttachments, toEmails...)
+func (e *EmailSmtp) SendWithDefaultTag(req EmailRequest) error {
+	err := e.SendWithTag("", "", req)
 	if err != nil {
 		return err
 	}
@@ -259,10 +250,8 @@ func (e *EmailSmtp) SendWithDefaultTag(emailTitle string, emailBody string, emai
 }
 
 // SendWithDefaultTagWithFs 使用默认标签和嵌入文件系统发送邮件
-func (e *EmailSmtp) SendWithDefaultTagWithFs(fs *embed.FS, emailTitle string, emailBody string,
-	emailAttachments []string,
-	toEmails ...string) error {
-	err := e.SendWithTagAndFs(fs, "", "", emailTitle, emailBody, emailAttachments, toEmails...)
+func (e *EmailSmtp) SendWithDefaultTagWithFs(req EmailRequest) error {
+	err := e.SendWithTagAndFs("", "", req)
 	if err != nil {
 		e.Log.Error("SendWithDefaultTagWithFs 使用默认标签和嵌入文件系统发送邮件失败", "error", err)
 		return err
@@ -271,10 +260,8 @@ func (e *EmailSmtp) SendWithDefaultTagWithFs(fs *embed.FS, emailTitle string, em
 }
 
 // SendWithDefaultTagWithReaders 使用默认标签和读取器发送邮件
-func (e *EmailSmtp) SendWithDefaultTagWithReaders(readers map[string]*os.File, emailTitle string, emailBody string,
-	emailAttachments []string,
-	toEmails ...string) error {
-	err := e.SendWithTagAndReaders(readers, "", "", emailTitle, emailBody, emailAttachments, toEmails...)
+func (e *EmailSmtp) SendWithDefaultTagWithReaders(req EmailRequest) error {
+	err := e.SendWithTagAndReaders("", "", req)
 	if err != nil {
 		return err
 	}
@@ -282,9 +269,9 @@ func (e *EmailSmtp) SendWithDefaultTagWithReaders(readers map[string]*os.File, e
 }
 
 // SendWithDefaultTagWithFiles 使用默认标签和文件列表发送文件
-func (e *EmailSmtp) SendWithDefaultTagWithFiles(files map[string]*os.File, emailTitle string, emailBody string, toEmails ...string) error {
+func (e *EmailSmtp) SendWithDefaultTagWithFiles(req EmailRequest) error {
 	e.Log.Debug("使用默认标签和文件列表发送文件")
-	err := e.SendWithTagAndFiles(files, "", "", emailTitle, emailBody, toEmails...)
+	err := e.SendWithTagAndFiles("", "", req)
 	if err != nil {
 		e.Log.Error("使用默认标签和文件列表发送文件失败", "error", err)
 		return err
@@ -293,105 +280,133 @@ func (e *EmailSmtp) SendWithDefaultTagWithFiles(files map[string]*os.File, email
 }
 
 // SendWithKey 生成一个随机的key作为邮件的标识进行发送
-func (e *EmailSmtp) SendWithKey(emailTitle string, emailBody string, emailAttachments []string,
-	toEmails ...string) (string, error) {
+func (e *EmailSmtp) SendWithKey(req EmailRequest) (string, error) {
 	key := e.random.Str(32)
-	err := e.SendWithTag("", key, emailTitle, emailBody, emailAttachments, toEmails...)
+	err := e.SendWithTag("", key, req)
 	if err != nil {
 		return "", err
 	}
 	return key, nil
 }
 
-// GetHtmlMessage 获取HTML类型的消息对象
-// @param emailTitle 邮件标题
-// @param emailBody 邮件内容
-// @param toEmails 收件人邮箱
-func (e *EmailSmtp) GetHtmlMessage(
-	emailTitle string,
-	emailBody string,
-	toEmails ...string) *gomail.Message {
+// GetMessage 获取HTML类型的消息对象
+// @param req 邮件请求对象
+func (e *EmailSmtp) GetMessage(req EmailRequest) (*gomail.Message, error) {
 	// 创建消息对象
 	m := gomail.NewMessage()
 
 	// 设置请求头
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
+
+	// 发件人
 	m.SetHeader("From", e.Config.Smtp.Email)
-	m.SetHeader("To", toEmails...)
-	m.SetHeader("Subject", emailTitle)
+
+	// 收件人
+	if req.ToEmails == nil || len(req.ToEmails) == 0 {
+		return nil, errors.New("ToEmails 收件人不能为空")
+	}
+	m.SetHeader("To", req.ToEmails...)
+
+	// 抄送
+	if req.CcEmails != nil && len(req.CcEmails) > 0 {
+		m.SetHeader("Cc", req.CcEmails...)
+	}
+
+	// 密送
+	if req.BccEmails != nil && len(req.BccEmails) > 0 {
+		m.SetHeader("Bcc", req.BccEmails...)
+	}
+
+	// 设置标题
+	if req.Title == "" {
+		req.Title = e.Config.CommonTitle
+	}
+	m.SetHeader("Subject", req.Title)
 
 	// 设置请求体
-	m.SetBody("text/html", emailBody)
-	return m
-}
-
-// SendGoMail 使用gomail发送邮件
-// @param emailTitle 邮件标题
-// @param emailBody 邮件内容
-// @param emailAttachments 邮件附件
-// @param toEmails 收件人邮箱
-// @return err 异常信息
-func (e *EmailSmtp) SendGoMail(
-	emailTitle string,
-	emailBody string,
-	emailAttachments []string,
-	toEmails ...string) (err error) {
-
-	// 创建消息对象
-	m := e.GetHtmlMessage(emailTitle, emailBody, toEmails...)
+	if req.Type == "text" {
+		m.SetBody("text/plain", req.Body)
+	} else {
+		m.SetBody("text/html", req.Body)
+	}
 
 	// 设置附件
-	for _, file := range emailAttachments {
-		_, err = os.Stat(file) // 判断文件是否存在
-		if err != nil {
-			Log.Error("添加附件失败", "error", err, "file", file)
-			return
-		} else {
-			m.Attach(file)
+	if req.Attachments != nil && len(req.Attachments) > 0 {
+		for _, file := range req.Attachments {
+			if req.IsFs {
+				m.AttachWithFs(req.Fs, file)
+			} else if req.IsFiles {
+				m.AttachWithReaders(req.Files, file)
+			} else {
+				_, err := os.Stat(file) // 判断文件是否存在
+				if err != nil {
+					Log.Error("添加附件失败", "error", err, "file", file)
+				} else {
+					m.Attach(file)
+				}
+			}
 		}
 	}
 
+	// 返回消息对象
+	return m, nil
+}
+
+// SendGoMail 使用gomail发送邮件
+// @param req 发送邮件请求对象
+// @return 错误信息
+func (e *EmailSmtp) SendGoMail(req EmailRequest) error {
+
+	// 创建消息对象
+	m, err := e.GetMessage(req)
+	if err != nil {
+		e.Log.Error("获取发送消息对象失败", "error", err)
+		return err
+	}
+
 	// 发送邮件
 	err = e.GetSenderAndSendEmail(m)
 	if err != nil {
 		Log.Error("发送邮件失败", "error", err)
 	}
-	return
+
+	return nil
 }
 
 // SendGoMailWithFs 使用嵌入文件系统发送邮件
-func (e *EmailSmtp) SendGoMailWithFs(fs *embed.FS, emailTitle string, emailBody string, emailAttachments []string,
-	toEmails ...string) (err error) {
-	m := e.GetHtmlMessage(emailTitle, emailBody, toEmails...)
-
-	for _, file := range emailAttachments {
-		m.AttachWithFs(fs, file)
+func (e *EmailSmtp) SendGoMailWithFs(req EmailRequest) error {
+	m, err := e.GetMessage(req)
+	if err != nil {
+		e.Log.Error("获取邮件发送消息失败", "error", err)
+		return err
 	}
 
 	// 发送邮件
 	err = e.GetSenderAndSendEmail(m)
 	if err != nil {
 		Log.Error("发送邮件失败", "error", err)
+		return err
 	}
-	return
+
+	return nil
 }
 
 // SendGoMailWithReaders 使用读取器列表发送邮件
-func (e *EmailSmtp) SendGoMailWithReaders(readers map[string]*os.File, emailTitle string, emailBody string,
-	emailAttachments []string,
-	toEmails ...string) (err error) {
-	m := e.GetHtmlMessage(emailTitle, emailBody, toEmails...)
-
-	for _, file := range emailAttachments {
-		m.AttachWithReaders(readers, file)
+func (e *EmailSmtp) SendGoMailWithReaders(req EmailRequest) error {
+	m, err := e.GetMessage(req)
+	if err != nil {
+		e.Log.Error("获取发送消息对象失败", "error", err)
+		return err
 	}
 
 	// 发送邮件
 	err = e.GetSenderAndSendEmail(m)
 	if err != nil {
 		Log.Error("发送邮件失败", "error", err)
+		return err
 	}
-	return
+
+	return nil
 }
 
 // GetSenderAndSendEmail 获取gomail邮件发送器然后发送邮件
@@ -420,23 +435,24 @@ func (e *EmailSmtp) GetSenderAndSendEmail(m *gomail.Message) error {
 }
 
 // SendGoMailWithFiles 使用gmail和文件列表发送文件
-func (e *EmailSmtp) SendGoMailWithFiles(files map[string]*os.File, emailTitle string, emailBody string, toEmails ...string) (err error) {
+func (e *EmailSmtp) SendGoMailWithFiles(req EmailRequest) error {
 	e.Log.Debug("SendGoMailWithFiles 使用gmail和文件列表发送文件")
 
 	// 创建消息对象
-	m := e.GetHtmlMessage(emailTitle, emailBody, toEmails...)
-
-	// 添加附件
-	for fileName, fileObj := range files {
-		m.AddAttachmentFileObj(fileName, fileObj)
+	m, err := e.GetMessage(req)
+	if err != nil {
+		e.Log.Error("获取发送消息对象失败", "error", err)
+		return err
 	}
 
 	// 发送邮件
 	err = e.GetSenderAndSendEmail(m)
 	if err != nil {
 		Log.Error("发送邮件失败", "error", err)
+		return err
 	}
-	return
+
+	return nil
 }
 
 // SendHtmlManyAndCheckResult 批量发送HTML模板邮件并校验结果
@@ -444,13 +460,10 @@ func (e *EmailSmtp) SendGoMailWithFiles(files map[string]*os.File, emailTitle st
 // @param internalSeconds 发送没封邮件的间隔时间，防止发送过快
 // @return results 校验结果列表
 // @return err 错误信息
-func (e *Email) SendHtmlManyAndCheckResult(
-	contents []string,
-	toEmails ...string,
-) (results []EmailResult, err error) {
+func (e *Email) SendHtmlManyAndCheckResult(reqList []EmailRequest) (results []EmailResult, err error) {
 
 	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, toEmails...)
+	sendFsAttachmentsMany, err := e.SendMany(reqList)
 	if err != nil {
 		e.Log.Error("批量发送邮件失败", "error", err)
 		return
@@ -462,177 +475,74 @@ func (e *Email) SendHtmlManyAndCheckResult(
 	return newResults, nil
 }
 
-// SendHtmlMany 批量发送HTML文本文件
-// @param contents 内容列表
-// @param toEmails 收件人邮箱
-// @return results 发送结果
-// @return err 错误信息
-func (e *Email) SendHtmlMany(
-	contents []string,
-	toEmails ...string,
-) (results []EmailResult, err error) {
-
-	// 遍历邮件内容
-	for _, emailBody := range contents {
-		emailTitle := e.Config.CommonTitle
-		result := EmailResult{
-			Title:     emailTitle,
-			Body:      emailBody,
-			From:      e.Config.Smtp.Email,
-			To:        toEmails,
-			StartTime: int(time.Now().Unix()),
-		}
-		e.Log.Debug("正在发送邮件", "emailBody", emailBody)
-
-		// 重连三次，判断邮件能够正常访问服务器
-		for i := 0; i < 3; i++ {
-			if e.IsHealth() {
-				break
-			} else {
-				e.Log.Warning("无法正常连接到邮件服务器，正在尝试重连", "num", i+1)
-				time.Sleep(time.Second * 3)
-			}
-		}
-
-		// 发送邮件
-		key := e.Random.Str(16)
-		result.Key = key
-		err = e.Send.SendWithTag(
-			e.Config.HeaderTagName,
-			key,
-			emailTitle,
-			emailBody,
-			[]string{},
-			toEmails...,
-		)
-
-		// 校验是否成功
+// SendMany 批量发送HTML文本文件
+// @param reqList 邮件发送请求对象列表
+// @return 发送结果列表，错误信息
+func (e *Email) SendMany(reqList []EmailRequest) ([]EmailResult, error) {
+	var results []EmailResult
+	for _, req := range reqList {
+		result, err := e.SendHtml(req)
 		if err != nil {
-			result.SendStatus = false
-			e.Log.Error("发送邮件失败", "error", err)
-		} else {
-			result.SendStatus = true
-			e.Log.Debug("发送邮件成功")
-		}
-		result.EndTime = int(time.Now().Unix())
-		results = append(results, result)
-		time.Sleep(time.Duration(e.Config.SendSleepSeconds) * time.Second) // 指定间隔时间，防止过快发送
-	}
-	return
-}
-
-// SendAttachmentMany 使用默认标签附件列表批量发送邮件
-// @param attachments 附件列表
-// @param emailTitle 邮件标题
-// @param emailBody 邮件内容
-// @param toEmails 收件人邮箱
-// @return results 发送结果
-// @return err 错误信息
-func (e *Email) SendAttachmentMany(
-	attachments []string,
-	toEmails ...string,
-) (results []EmailResult, err error) {
-	// 遍历附件
-	for _, file := range attachments {
-		emailTitle := e.Config.CommonTitle
-		emailBody := "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(128)
-		result := EmailResult{
-			AttachmentName: filepath.Base(file),
-			AttachmentPath: file,
-			Title:          emailTitle,
-			Body:           emailBody,
-			From:           e.Config.Smtp.Email,
-			To:             toEmails,
-		}
-		e.Log.Debug("正在携带附件发送邮件", "title", emailTitle, "file", file)
-
-		// 重连三次，判断邮件能够正常访问服务器
-		for i := 0; i < 3; i++ {
-			if e.IsHealth() {
-				break
-			} else {
-				e.Log.Warning("无法正常连接到邮件服务器，正在尝试重连", "num", i+1)
-				time.Sleep(time.Second * 3)
-			}
-		}
-
-		// 发送邮件
-		key := e.Random.Str(16)
-		result.Key = key
-		err = e.Send.SendWithTag(
-			e.Config.HeaderTagName,
-			key,
-			emailTitle,
-			emailBody,
-			[]string{file},
-			toEmails...,
-		)
-
-		// 校验是否成功
-		if err != nil {
-			e.Log.Error("发送邮件失败", "error", err)
-			result.SendStatus = false
-		} else {
-			result.SendStatus = true
-			e.Log.Debug("发送邮件成功")
+			e.Log.Error("发送HTML邮件失败", "error", err, "req", req)
+			return nil, err
 		}
 		results = append(results, result)
-		time.Sleep(time.Duration(e.Config.SendSleepSeconds) * time.Second) // 休眠一下
+		if e.Config.SendSleepMillisecond > 0 {
+			time.Sleep(time.Duration(e.Config.SendSleepMillisecond) * time.Millisecond)
+		}
 	}
-	return
+	return results, nil
 }
 
-// SendAttachments 发送附件，附件可以有多个
-// @param attachments 附件列表
-// @param emailTitle 邮件标题
-// @param emailBody 邮件内容
-// @param toEmails 收件人邮箱
-// @return results 发送结果
-// @return err 错误信息
-func (e *Email) SendAttachments(emailTitle, emailBody string, attachments []string, toEmails ...string) (
-	EmailResult, error) {
-	result := EmailResult{}
+// GetEmailResult 获取邮件响应结果对象
+func (e *Email) GetEmailResult(req EmailRequest) EmailResult {
+	if req.Title == "" {
+		req.Title = e.Config.CommonTitle
+	}
+	if req.Body == "" {
+		req.Body = "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(32)
+	}
+	var result = EmailResult{
+		Key:           "",
+		Title:         req.Title,
+		Body:          req.Body,
+		From:          e.Config.Smtp.Email,
+		To:            req.ToEmails,
+		Attachments:   req.Attachments,
+		StartTime:     int(time.Now().Unix()),
+		EndTime:       0,
+		SendStatus:    false,
+		ReceiveStatus: false,
+	}
+	return result
+}
 
-	// 无法正常连接服务器
+// SendHtml 发送HTML类型的邮件
+// @param req 请求对象
+// @return 发送结果，错误信息
+func (e *Email) SendHtml(req EmailRequest) (EmailResult, error) {
+	req.Type = "html"
+	result := e.GetEmailResult(req)
+
+	// 无法连接邮件服务器
 	if !e.IsHealth() {
-		return result, errors.New("无法正常连接邮件服务器")
+		return result, errors.New("邮件服务器无法正常连接")
 	}
 
 	// 发送邮件
-	if emailTitle == "" {
-		emailTitle = e.Config.CommonTitle
-	}
-	if emailBody == "" {
-		emailBody = "<h1>测试用的随机字符串</h1><br/>" + e.Random.Str(128)
-	}
 	key := e.Random.Str(16)
-	err := e.Send.SendWithTag(
-		e.Config.HeaderTagName,
-		key,
-		emailTitle,
-		emailBody,
-		attachments,
-		toEmails...,
-	)
-
-	// 准备响应结果
-	result = EmailResult{
-		Attachments: attachments,
-		Title:       emailTitle,
-		Body:        emailBody,
-		From:        e.Config.Smtp.Email,
-		To:          toEmails,
-	}
+	result.Key = key
+	err := e.Send.SendWithTag(e.Config.HeaderTagName, key, req)
+	result.EndTime = int(time.Now().Unix())
 
 	// 校验是否成功
 	if err != nil {
 		e.Log.Error("发送邮件失败", "error", err)
-		result.SendStatus = false
 	} else {
 		result.SendStatus = true
 		e.Log.Debug("发送邮件成功")
 	}
 
-	// 返回发送结果
+	// 返回结果
 	return result, nil
 }

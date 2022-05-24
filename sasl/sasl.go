@@ -1,4 +1,3 @@
-// Library for Simple Authentication and Security Layer (SASL) defined in RFC 4422.
 package sasl
 
 // Note:

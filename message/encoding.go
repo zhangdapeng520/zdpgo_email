@@ -7,8 +7,6 @@ import (
 	"io"
 	"mime/quotedprintable"
 	"strings"
-
-	"github.com/zhangdapeng520/zdpgo_email/textwrapper"
 )
 
 type UnknownEncodingError struct {
@@ -56,9 +54,9 @@ func encodingWriter(enc string, w io.Writer) (io.WriteCloser, error) {
 	case "quoted-printable":
 		wc = quotedprintable.NewWriter(w)
 	case "base64":
-		wc = base64.NewEncoder(base64.StdEncoding, textwrapper.NewRFC822(w))
+		wc = base64.NewEncoder(base64.StdEncoding, NewRFC822(w))
 	case "7bit", "8bit":
-		wc = nopCloser{textwrapper.New(w, "\r\n", 1000)}
+		wc = nopCloser{NewWrapper(w, "\r\n", 1000)}
 	case "binary", "":
 		wc = nopCloser{w}
 	default:

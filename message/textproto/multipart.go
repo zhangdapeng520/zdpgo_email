@@ -1,8 +1,3 @@
-// Copyright 2010 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-//
-
 package textproto
 
 // Multipart is defined in RFC 2046.
@@ -19,9 +14,7 @@ import (
 
 var emptyParams = make(map[string]string)
 
-// This constant needs to be at least 76 for this package to work correctly.
-// This is because \r\n--separator_of_len_70- would fill the buffer and it
-// wouldn't be safe to consume a single byte from it.
+// 这个常量至少需要为76，这个包才能正常工作。这是因为\r\n——separator_of_len_70——会填满缓冲区，从其中消耗一个字节是不安全的。
 const peekBufferSize = 4096
 
 // A Part represents a single part in a multipart body.

@@ -122,9 +122,6 @@ func NewWithConfig(config Config) (email *Email, err error) {
 	}
 
 	// 保存配置
-	if config.SendSleepSeconds <= 0 {
-		config.SendSleepSeconds = 1
-	}
 	email.Config = &config
 	if email.Send != nil {
 		email.Send.Config = &config
@@ -160,7 +157,7 @@ func (e *Email) IsHealth() bool {
 }
 
 // GetSender 获取发送对象
-func (e *Email) GetSender() (sender gomail.SendCloser, err error) {
+func (e *Email) GetSender() (gomail.SendCloser, error) {
 	// 创建拨号器
 	d := &gomail.Dialer{
 		Host:     e.Config.Smtp.Host,
@@ -171,6 +168,12 @@ func (e *Email) GetSender() (sender gomail.SendCloser, err error) {
 	}
 
 	// 拨号
-	sender, err = d.Dial()
-	return
+	sender, err := d.Dial()
+	if err != nil {
+		e.Log.Error("获取发送对象失败", "error", err)
+		return nil, err
+	}
+
+	// 返回发送器
+	return sender, nil
 }

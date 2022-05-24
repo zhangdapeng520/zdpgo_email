@@ -13,15 +13,31 @@ import (
 @Description:
 */
 
-func SendHtmlMany(e *zdpgo_email.Email) {
-	contents := []string{
-		"https://www.baidu.com",
-		"https://www.sogo.com",
-		"https://www.google.com",
+func SendHtml(e *zdpgo_email.Email) {
+	req := zdpgo_email.EmailRequest{
+		Title:    "单个HTML测试",
+		Body:     "https://www.baidu.com",
+		ToEmails: []string{"lxgzhw@163.com"},
 	}
+	result, err := e.SendHtml(req)
+	if err != nil {
+		e.Log.Error("发送邮件失败", "error", err)
+	}
+	fmt.Println(result.Title, result.SendStatus, result.Key, result.StartTime, result.EndTime)
+}
 
+func SendMany(e *zdpgo_email.Email) {
+	reqList := []zdpgo_email.EmailRequest{
+		{Body: "https://www.baidu.com", ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+		{Body: "https://www.sogo.com", ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+		{Body: "https://www.google.com", ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+		{Attachments: []string{"uploads/1.txt"}, ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+		{Attachments: []string{"uploads/2.txt"}, ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+		{Attachments: []string{"uploads/3.txt"}, ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+		{Attachments: []string{"uploads/1.txt", "uploads/2.txt", "uploads/3.txt"}, ToEmails: []string{"lxgzhw@163.com"}, CcEmails: []string{"zhangdp@anpro-tech.com"}},
+	}
 	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendHtmlMany(contents, "lxgzhw@163.com")
+	sendFsAttachmentsMany, err := e.SendMany(reqList)
 	if err != nil {
 		fmt.Println("批量发送邮件失败")
 		return
@@ -30,30 +46,4 @@ func SendHtmlMany(e *zdpgo_email.Email) {
 	for _, result := range sendFsAttachmentsMany {
 		fmt.Println(result.Title, result.SendStatus, result.Key, result.StartTime, result.EndTime)
 	}
-}
-
-func SendAttachmentMany(e *zdpgo_email.Email) {
-	// 准备数据
-	data := []struct {
-		Attachments []string
-		ToEmail     string
-	}{
-		{Attachments: []string{"uploads/1.txt", "uploads/2.doc", "uploads/3.exe"}, ToEmail: "lxgzhw@163.com"},
-	}
-
-	// 测试数据
-	for _, d := range data {
-		emailResults, err := e.SendAttachmentMany(d.Attachments, d.ToEmail)
-		if err != nil {
-			panic(err)
-		}
-		for _, result := range emailResults {
-			fmt.Println(result.Title, result.SendStatus)
-		}
-	}
-}
-
-func SendAttachments(e *zdpgo_email.Email) {
-	attachments := []string{"uploads/1.txt", "uploads/2.doc", "uploads/3.exe"}
-	e.SendAttachments("", "", attachments, "lxgzhw@163.com")
 }
