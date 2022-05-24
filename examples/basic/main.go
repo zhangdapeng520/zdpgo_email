@@ -27,7 +27,7 @@ func main() {
 			IsSSL:    true,
 		},
 	})
-	send.SendHtml(e) // 发送单个HTML邮件
+	send.Send(e)     // 发送单个HTML邮件
 	send.SendMany(e) // 批量发送HTML邮件
 	search.Search(e) // 搜索
 }

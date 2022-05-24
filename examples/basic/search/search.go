@@ -23,7 +23,7 @@ func Search(e *zdpgo_email.Email) {
 	// 进行测试
 	for _, preFilter := range fileters {
 		fmt.Println("开始测试：", preFilter)
-		searchResults, err := e.Receive.SearchByTag(preFilter.From, preFilter.SentSince, preFilter.HeaderTagName,
+		searchResults, err := e.ReceiveObj.SearchByTag(preFilter.From, preFilter.SentSince, preFilter.HeaderTagName,
 			preFilter.HeaderTagValue)
 		if err != nil {
 			fmt.Println(err)

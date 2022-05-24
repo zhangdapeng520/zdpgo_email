@@ -26,7 +26,7 @@ func (e *Email) IsSendSuccessByKeyValue(from string, startTime string, tagKey, t
 	af := PostFilter{}
 
 	// 搜索
-	results, err := e.Receive.SearchBF(&bf, &af)
+	results, err := e.ReceiveObj.SearchBF(&bf, &af)
 	if err != nil {
 		e.Log.Error("搜索邮件失败", "error", err, "filter", bf)
 		return false

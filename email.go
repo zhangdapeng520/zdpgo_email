@@ -21,13 +21,14 @@ import (
 )
 
 type Email struct {
-	Send    *EmailSmtp
-	Receive *EmailImap
-	Fs      *embed.FS // 嵌入的文件系统
-	Random  *zdpgo_random.Random
-	Yaml    *zdpgo_yaml.Yaml
-	Log     *zdpgo_log.Log // 日志对象
-	Config  *Config        // 配置对象
+	SendObj    *EmailSmtp
+	ReceiveObj *EmailImap
+	Fs         *embed.FS // 嵌入的文件系统
+	Random     *zdpgo_random.Random
+	Yaml       *zdpgo_yaml.Yaml
+	Log        *zdpgo_log.Log // 日志对象
+	Config     *Config        // 配置对象
+	Result     *EmailResult   // 邮件发送结果
 }
 
 // New 新建邮件对象，支持发送邮件和接收邮件
@@ -70,9 +71,9 @@ func NewWithConfig(config Config) (email *Email, err error) {
 
 	// 邮件发送对象
 	if config.Smtp.Host != "" && config.Smtp.Port != 0 && config.Smtp.Password != "" {
-		email.Send = &EmailSmtp{Headers: textproto.MIMEHeader{}}
-		email.Send.random = zdpgo_random.New()
-		email.Send.Log = email.Log
+		email.SendObj = &EmailSmtp{Headers: textproto.MIMEHeader{}}
+		email.SendObj.Random = zdpgo_random.New()
+		email.SendObj.Log = email.Log
 	}
 
 	// 邮件接收对象
@@ -101,21 +102,21 @@ func NewWithConfig(config Config) (email *Email, err error) {
 		}
 
 		// 创建邮件接收对象
-		email.Receive, err = NewEmailImap(tlsConn)
+		email.ReceiveObj, err = NewEmailImap(tlsConn)
 		if err != nil {
 			email.Log.Error("创建邮件接收对象失败", "error", err)
 			return
 		}
 
 		// 设置tls
-		email.Receive.isTLS = true
-		email.Receive.serverName = config.Imap.Host
+		email.ReceiveObj.isTLS = true
+		email.ReceiveObj.serverName = config.Imap.Host
 
 		// 登录
 		if config.Imap.Email == "" {
 			config.Imap.Email = config.Imap.Username
 		}
-		err = email.Receive.Login(config.Imap.Email, config.Imap.Password)
+		err = email.ReceiveObj.Login(config.Imap.Email, config.Imap.Password)
 		if err != nil {
 			email.Log.Error("登录邮件收件服务器失败", "error", err)
 		}
@@ -123,11 +124,11 @@ func NewWithConfig(config Config) (email *Email, err error) {
 
 	// 保存配置
 	email.Config = &config
-	if email.Send != nil {
-		email.Send.Config = &config
+	if email.SendObj != nil {
+		email.SendObj.Config = &config
 	}
-	if email.Receive != nil {
-		email.Receive.Config = &config
+	if email.ReceiveObj != nil {
+		email.ReceiveObj.Config = &config
 	}
 
 	return
@@ -136,7 +137,7 @@ func NewWithConfig(config Config) (email *Email, err error) {
 // IsHealth 检测是否健康，能否正常连接
 func (e *Email) IsHealth() bool {
 	// 没有发送对象
-	if e.Send == nil {
+	if e.SendObj == nil {
 		e.Log.Debug("邮件发送对象为空")
 		return false
 	}
@@ -144,9 +145,10 @@ func (e *Email) IsHealth() bool {
 	// 获取发送器
 	sender, err := e.GetSender()
 	if err != nil {
-		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.Send.Config)
+		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.SendObj.Config)
 		return false
 	}
+	defer sender.Close()
 
 	if sender == nil {
 		e.Log.Error("邮件发送器为空", "sender", sender)

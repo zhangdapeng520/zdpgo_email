@@ -13,13 +13,13 @@ import (
 @Description:
 */
 
-func SendHtml(e *zdpgo_email.Email) {
+func Send(e *zdpgo_email.Email) {
 	req := zdpgo_email.EmailRequest{
 		Title:    "单个HTML测试",
 		Body:     "https://www.baidu.com",
 		ToEmails: []string{"lxgzhw@163.com"},
 	}
-	result, err := e.SendHtml(req)
+	result, err := e.Send(req)
 	if err != nil {
 		e.Log.Error("发送邮件失败", "error", err)
 	}

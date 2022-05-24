@@ -18,8 +18,11 @@ type EmailResult struct {
 	Key           string   `json:"key"`            // 唯一key
 	Title         string   `json:"title"`          // 标题
 	Body          string   `json:"body"`           // 邮件内容
+	Type          string   `json:"type" `          // 邮件类型：html、text文本
 	From          string   `json:"from"`           // 发件人
-	To            []string `json:"to"`             // 收件人
+	ToEmails      []string `json:"to_emails"`      // 收件人
+	CcEmails      []string `json:"cc_emails"`      // 抄送人邮箱地址列表
+	BccEmails     []string `json:"bcc_emails"`     // 密送人邮箱地址列表
 	Attachments   []string `json:"attachments"`    // 附件列表
 	StartTime     int      `json:"start_time"`     // 发送邮件的开始时间
 	EndTime       int      `json:"end_time"`       // 发送邮件的结束时间

@@ -54,7 +54,8 @@ type EmailSmtp struct {
 	Attachments []*Attachment        `json:"attachments" yaml:"attachments" env:"attachments"` // 附件
 	ReadReceipt []string             `json:"read_receipt" yaml:"read_receipt" env:"read_receipt"`
 	Config      *Config              `json:"config" yaml:"config" env:"config"` // 配置对象
-	random      *zdpgo_random.Random
+	Result      *EmailResult         `json:"result"`
+	Random      *zdpgo_random.Random
 	Fs          *embed.FS      // 嵌入文件系统
 	Log         *zdpgo_log.Log // 日志对象
 }
@@ -87,7 +88,7 @@ func NewEmailSmtpWithConfig(config Config) (email *EmailSmtp, err error) {
 		config.HeaderTagValue = "zhangdapeng520"
 	}
 	email.Config = &config
-	email.random = zdpgo_random.New()
+	email.Random = zdpgo_random.New()
 
 	// 日志
 	logConfig := zdpgo_log.Config{
