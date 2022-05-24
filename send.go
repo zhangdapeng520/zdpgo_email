@@ -17,49 +17,17 @@ import (
 */
 
 // SendWithTag 通过标签发送邮件
-func (e *EmailSmtp) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
-	// 检查key是否符合规范
-	if tagKey != "" {
-		tagArr := strings.Split(tagKey, "-")
-		if len(tagArr) != 3 {
-			msg := "key必须由两个“-”分割的字符组成"
-			Log.Error("key必须由两个“-”分割的字符组成")
-			return errors.New(msg)
-		} else if tagArr[0] != "X" {
-			msg := "Key的第一个字符必须是大写的X"
-			Log.Error(msg)
-			return errors.New(msg)
-		}
-		e.Config.HeaderTagName = tagKey
-	}
-
-	// 检查value
-	if tagValue != "" {
-		e.Config.HeaderTagValue = tagValue
-	}
-
-	// 发送邮件
-	e.Result.Key = e.Config.HeaderTagValue
-	err := e.SendGoMail(req)
-	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
-		return err
-	}
-	return nil
-}
-
-// SendWithTag 通过标签发送邮件
 func (e *Email) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
 	// 检查key是否符合规范
 	if tagKey != "" {
 		tagArr := strings.Split(tagKey, "-")
 		if len(tagArr) != 3 {
 			msg := "key必须由两个“-”分割的字符组成"
-			Log.Error("key必须由两个“-”分割的字符组成")
+			e.Log.Error("key必须由两个“-”分割的字符组成")
 			return errors.New(msg)
 		} else if tagArr[0] != "X" {
 			msg := "Key的第一个字符必须是大写的X"
-			Log.Error(msg)
+			e.Log.Error(msg)
 			return errors.New(msg)
 		}
 		e.Config.HeaderTagName = tagKey
@@ -78,74 +46,6 @@ func (e *Email) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
 		return err
 	}
 	return nil
-}
-
-// GetMessage 获取HTML类型的消息对象
-// @param req 邮件请求对象
-func (e *EmailSmtp) GetMessage(req EmailRequest) (*gomail.Message, error) {
-	// 创建消息对象
-	m := gomail.NewMessage()
-
-	// 设置请求头
-	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
-
-	// 发件人
-	m.SetHeader("From", e.Config.Smtp.Email)
-
-	// 收件人
-	if req.ToEmails == nil || len(req.ToEmails) == 0 {
-		return nil, errors.New("ToEmails 收件人不能为空")
-	}
-	m.SetHeader("To", req.ToEmails...)
-
-	// 抄送
-	if req.CcEmails != nil && len(req.CcEmails) > 0 {
-		m.SetHeader("Cc", req.CcEmails...)
-	}
-
-	// 密送
-	if req.BccEmails != nil && len(req.BccEmails) > 0 {
-		m.SetHeader("Bcc", req.BccEmails...)
-	}
-
-	// 设置标题
-	if req.Title == "" {
-		req.Title = e.Config.CommonTitle
-	}
-	m.SetHeader("Subject", req.Title)
-	e.Result.Title = req.Title
-
-	// 设置请求体
-	if req.Body == "" {
-		req.Body = "<h1>测试邮件内容</h1><div>验证码：<span style='color:red;'>" + e.Result.Key + "</span></div>"
-	}
-	if req.Type == "text" {
-		m.SetBody("text/plain", req.Body)
-	} else {
-		m.SetBody("text/html", req.Body)
-	}
-	e.Result.Body = req.Body
-
-	// 设置附件
-	if req.Attachments != nil && len(req.Attachments) > 0 {
-		for _, file := range req.Attachments {
-			if req.IsFs {
-				m.AttachWithFs(req.Fs, file)
-			} else if req.IsFiles {
-				m.AttachWithReaders(req.Files, file)
-			} else {
-				_, err := os.Stat(file) // 判断文件是否存在
-				if err != nil {
-					Log.Error("添加附件失败", "error", err, "file", file)
-				} else {
-					m.Attach(file)
-				}
-			}
-		}
-	}
-
-	// 返回消息对象
-	return m, nil
 }
 
 // GetMessage 获取HTML类型的消息对象
@@ -158,7 +58,7 @@ func (e *Email) GetMessage(req EmailRequest) (*gomail.Message, error) {
 	m.SetHeader(e.Config.HeaderTagName, e.Config.HeaderTagValue)
 
 	// 发件人
-	m.SetHeader("From", e.Config.Smtp.Email)
+	m.SetHeader("From", e.Config.Email)
 
 	// 收件人
 	if req.ToEmails == nil || len(req.ToEmails) == 0 {
@@ -204,7 +104,7 @@ func (e *Email) GetMessage(req EmailRequest) (*gomail.Message, error) {
 			} else {
 				_, err := os.Stat(file) // 判断文件是否存在
 				if err != nil {
-					Log.Error("添加附件失败", "error", err, "file", file)
+					e.Log.Error("添加附件失败", "error", err, "file", file)
 				} else {
 					m.Attach(file)
 				}
@@ -231,56 +131,9 @@ func (e *Email) SendGoMail(req EmailRequest) error {
 	err = e.SendEmailWithMessage(m)
 	e.Result.EndTime = int(time.Now().Unix())
 	if err != nil {
-		Log.Error("发送邮件失败", "error", err)
+		e.Log.Error("发送邮件失败", "error", err)
 	}
 	e.Result.SendStatus = true
-
-	return nil
-}
-
-// SendGoMail 使用发送邮件
-// @param req 发送邮件请求对象
-// @return 错误信息
-func (e *EmailSmtp) SendGoMail(req EmailRequest) error {
-	// 创建消息对象
-	m, err := e.GetMessage(req)
-	if err != nil {
-		e.Log.Error("获取发送消息对象失败", "error", err)
-		return err
-	}
-
-	// 发送邮件
-	err = e.GetSenderAndSendEmail(m)
-	e.Result.EndTime = int(time.Now().Unix())
-	if err != nil {
-		Log.Error("发送邮件失败", "error", err)
-	}
-	e.Result.SendStatus = true
-
-	return nil
-}
-
-// GetSenderAndSendEmail 获取邮件发送器然后发送邮件
-// @param m 消息对象
-func (e *EmailSmtp) GetSenderAndSendEmail(m *gomail.Message) error {
-	// 获取邮件发送器
-	sender, err := e.GetGoMailSendCloser()
-	if err != nil {
-		Log.Error("获取邮件发送器失败", "error", err)
-		return err
-	}
-	defer func(sender gomail.SendCloser) {
-		err = sender.Close()
-		if err != nil {
-			Log.Error("关闭邮件发送器失败", "error", err)
-		}
-	}(sender)
-
-	// 发送邮件
-	err = gomail.Send(sender, m)
-	if err != nil {
-		Log.Error("发送邮件失败", "error", err)
-	}
 
 	return nil
 }
@@ -291,42 +144,23 @@ func (e *Email) SendEmailWithMessage(message *gomail.Message) error {
 	// 获取邮件发送器
 	sender, err := e.GetSender()
 	if err != nil {
-		Log.Error("获取邮件发送器失败", "error", err)
+		e.Log.Error("获取邮件发送器失败", "error", err)
 		return err
 	}
 	defer func(sender gomail.SendCloser) {
 		err = sender.Close()
 		if err != nil {
-			Log.Error("关闭邮件发送器失败", "error", err)
+			e.Log.Error("关闭邮件发送器失败", "error", err)
 		}
 	}(sender)
 
 	// 发送邮件
 	err = gomail.Send(sender, message)
 	if err != nil {
-		Log.Error("发送邮件失败", "error", err)
+		e.Log.Error("发送邮件失败", "error", err)
 	}
 
 	return nil
-}
-
-// SendHtmlManyAndCheckResult 批量发送HTML模板邮件并校验结果
-// @param contents 内容列表
-// @param internalSeconds 发送没封邮件的间隔时间，防止发送过快
-// @return results 校验结果列表
-// @return err 错误信息
-func (e *Email) SendHtmlManyAndCheckResult(reqList []EmailRequest) (results []EmailResult, err error) {
-	// 批量发送邮件
-	sendFsAttachmentsMany, err := e.SendMany(reqList)
-	if err != nil {
-		e.Log.Error("批量发送邮件失败", "error", err)
-		return
-	}
-	e.Log.Debug("批量发送邮件成功", "results", sendFsAttachmentsMany)
-
-	// 验证是否发送成功
-	var newResults = e.CheckResults(sendFsAttachmentsMany)
-	return newResults, nil
 }
 
 // SendMany 批量发送HTML文本文件
@@ -360,7 +194,7 @@ func (e *Email) Send(req EmailRequest) (EmailResult, error) {
 	// 创建响应对象
 	e.Result = &EmailResult{
 		Type:        req.Type,
-		From:        e.Config.Smtp.Email,
+		From:        e.Config.Email,
 		ToEmails:    req.ToEmails,
 		CcEmails:    req.CcEmails,
 		BccEmails:   req.BccEmails,

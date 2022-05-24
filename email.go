@@ -8,36 +8,31 @@ package zdpgo_email
 @Description: 核心邮件对象，包含收邮件和发送邮件的功能
 */
 import (
-	"crypto/tls"
 	"embed"
-	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
 	"github.com/zhangdapeng520/zdpgo_log"
 	"github.com/zhangdapeng520/zdpgo_random"
 	"github.com/zhangdapeng520/zdpgo_yaml"
-	"net"
-	"net/textproto"
-	"time"
+	"sync"
 )
 
 type Email struct {
-	SendObj    *EmailSmtp
-	ReceiveObj *EmailImap
-	Fs         *embed.FS // 嵌入的文件系统
-	Random     *zdpgo_random.Random
-	Yaml       *zdpgo_yaml.Yaml
-	Log        *zdpgo_log.Log // 日志对象
-	Config     *Config        // 配置对象
-	Result     *EmailResult   // 邮件发送结果
+	Fs     *embed.FS // 嵌入的文件系统
+	Random *zdpgo_random.Random
+	Yaml   *zdpgo_yaml.Yaml
+	Log    *zdpgo_log.Log // 日志对象
+	Config *Config        // 配置对象
+	Result *EmailResult   // 邮件发送结果
+	Lock   sync.Mutex     // 同步锁
 }
 
 // New 新建邮件对象，支持发送邮件和接收邮件
 func New() (email *Email, err error) {
-	return NewWithConfig(Config{})
+	return NewWithConfig(&Config{})
 }
 
 // NewWithConfig 根据配置文件，创建邮件对象
-func NewWithConfig(config Config) (email *Email, err error) {
+func NewWithConfig(config *Config) (email *Email, err error) {
 	email = &Email{}
 	email.Random = zdpgo_random.New()
 	email.Yaml = zdpgo_yaml.New()
@@ -69,83 +64,19 @@ func NewWithConfig(config Config) (email *Email, err error) {
 		config.CommonTitle = "【ZDP-Go-Email】邮件发送测试（仅限学习研究，切勿滥用）"
 	}
 
-	// 邮件发送对象
-	if config.Smtp.Host != "" && config.Smtp.Port != 0 && config.Smtp.Password != "" {
-		email.SendObj = &EmailSmtp{Headers: textproto.MIMEHeader{}}
-		email.SendObj.Random = zdpgo_random.New()
-		email.SendObj.Log = email.Log
-	}
-
-	// 邮件接收对象
-	if config.Imap.Host != "" && config.Imap.Port != 0 && config.Imap.Password != "" {
-		dialer := new(net.Dialer)
-		var (
-			conn net.Conn
-		)
-		conn, err = dialer.Dial("tcp", fmt.Sprintf("%s:%d", config.Imap.Host, config.Imap.Port))
-		if err != nil {
-			email.Log.Error("创建邮件接收对象失败")
-			return
-		}
-		// 连接到邮件服务器
-		tlsConfig := &tls.Config{
-			ServerName: config.Imap.Host,
-		}
-		tlsConn := tls.Client(conn, tlsConfig)
-		if config.Timeout == 0 {
-			config.Timeout = 30
-		}
-		err = tlsConn.SetDeadline(time.Now().Add(time.Duration(config.Timeout) * time.Second))
-		if err != nil {
-			email.Log.Error("连接到收件邮件服务器失败", "error", err)
-			return
-		}
-
-		// 创建邮件接收对象
-		email.ReceiveObj, err = NewEmailImap(tlsConn)
-		if err != nil {
-			email.Log.Error("创建邮件接收对象失败", "error", err)
-			return
-		}
-
-		// 设置tls
-		email.ReceiveObj.isTLS = true
-		email.ReceiveObj.serverName = config.Imap.Host
-
-		// 登录
-		if config.Imap.Email == "" {
-			config.Imap.Email = config.Imap.Username
-		}
-		err = email.ReceiveObj.Login(config.Imap.Email, config.Imap.Password)
-		if err != nil {
-			email.Log.Error("登录邮件收件服务器失败", "error", err)
-		}
-	}
-
 	// 保存配置
-	email.Config = &config
-	if email.SendObj != nil {
-		email.SendObj.Config = &config
-	}
-	if email.ReceiveObj != nil {
-		email.ReceiveObj.Config = &config
-	}
+	email.Config = config
 
+	// 返回创建的邮件对象
 	return
 }
 
 // IsHealth 检测是否健康，能否正常连接
 func (e *Email) IsHealth() bool {
-	// 没有发送对象
-	if e.SendObj == nil {
-		e.Log.Debug("邮件发送对象为空")
-		return false
-	}
-
 	// 获取发送器
 	sender, err := e.GetSender()
 	if err != nil {
-		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.SendObj.Config)
+		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.Config)
 		return false
 	}
 	defer sender.Close()
@@ -162,11 +93,11 @@ func (e *Email) IsHealth() bool {
 func (e *Email) GetSender() (gomail.SendCloser, error) {
 	// 创建拨号器
 	d := &gomail.Dialer{
-		Host:     e.Config.Smtp.Host,
-		Port:     e.Config.Smtp.Port,
-		Username: e.Config.Smtp.Email,
-		Password: e.Config.Smtp.Password,
-		SSL:      e.Config.Smtp.IsSSL,
+		Host:     e.Config.Host,
+		Port:     e.Config.Port,
+		Username: e.Config.Email,
+		Password: e.Config.Password,
+		SSL:      e.Config.IsSSL,
 	}
 
 	// 拨号
