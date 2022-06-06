@@ -95,7 +95,7 @@ func (e *Email) GetSender() (gomail.SendCloser, error) {
 	d := &gomail.Dialer{
 		Host:     e.Config.Host,
 		Port:     e.Config.Port,
-		Username: e.Config.Email,
+		Username: e.Config.Username,
 		Password: e.Config.Password,
 		SSL:      e.Config.IsSSL,
 	}
