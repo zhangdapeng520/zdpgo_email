@@ -38,17 +38,6 @@ func NewWithConfig(config *Config, log *zdpgo_log.Log) (email *Email, err error)
 	email.Yaml = zdpgo_yaml.New()
 
 	// 日志对象
-	if config.LogFilePath == "" {
-		config.LogFilePath = "logs/zdpgo/zdpgo_email.log"
-	}
-	logConfig := zdpgo_log.Config{
-		Debug:       config.Debug,
-		OpenJsonLog: true,
-		LogFilePath: config.LogFilePath,
-	}
-	if config.Debug {
-		logConfig.IsShowConsole = true
-	}
 	email.Log = log
 	email.Log.Debug("创建email日志对象成功", "config", config)
 	gomail.Log = email.Log // 初始化gomail中的日志对象
