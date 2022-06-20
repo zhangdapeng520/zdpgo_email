@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email"
+	"github.com/zhangdapeng520/zdpgo_log"
 )
 
 /*
@@ -15,14 +16,13 @@ import (
 
 func main() {
 	e, _ := zdpgo_email.NewWithConfig(&zdpgo_email.Config{
-		Debug:    true,
 		Email:    "1156956636@qq.com",
 		Username: "zhangdapeng520",
 		Password: "zhangdapeng520",
 		Host:     "localhost",
 		Port:     3333,
 		IsSSL:    false,
-	})
+	}, zdpgo_log.Tmp)
 	req := zdpgo_email.EmailRequest{
 		Title:    "单个HTML测试",
 		Body:     "https://www.baidu.com",

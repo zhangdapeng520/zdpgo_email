@@ -1,8 +1,7 @@
-github.com/zhangdapeng520/zdpgo_log v1.3.3/go.mod h1:Qnr8tZCpmDWqRfJpw0r5ClUNqdOJwLNXIyXA2IGXv6k=
-github.com/zhangdapeng520/zdpgo_log v1.3.4 h1:hHB+ELh0zaBe5NLyASTDZ1qFnpkiFcOM582Phen1B7w=
-github.com/zhangdapeng520/zdpgo_log v1.3.4/go.mod h1:Qnr8tZCpmDWqRfJpw0r5ClUNqdOJwLNXIyXA2IGXv6k=
-github.com/zhangdapeng520/zdpgo_random v1.1.5 h1:o5CKy54t6oAlt612p6QK+R8oeIOwacDnAa+5BmT0CUQ=
-github.com/zhangdapeng520/zdpgo_random v1.1.5/go.mod h1:tSy7XqzYOw0h3O/FRLmfYUft/CMYd8JUpRH4yh/5Glw=
+github.com/zhangdapeng520/zdpgo_log v1.3.5 h1:gx8cK/OMMbsqUk3kCt4owq47egbCtIXYSXwsh+iYnLs=
+github.com/zhangdapeng520/zdpgo_log v1.3.5/go.mod h1:S+JZ2khrrNZsy1LJMcf0omvG3iCsq9aMG8vPwwXX1EI=
+github.com/zhangdapeng520/zdpgo_random v1.1.8 h1:cBIg7WXmGO2NIW8PsBI0grjtGKn2a4AfM0lz4LbtNxk=
+github.com/zhangdapeng520/zdpgo_random v1.1.8/go.mod h1:nFOV4cBDdx7wDH9oxcpGxyiJTqWKcnGo6t4fstvDyjg=
 github.com/zhangdapeng520/zdpgo_yaml v0.1.0 h1:tIbAnMXH/voigfAjNiclM4nlQcbZzutNlI5Jk+37tjE=
 github.com/zhangdapeng520/zdpgo_yaml v0.1.0/go.mod h1:bsPOffw0/qvTmaukVBeZe/Mvui9fxa9+0sbhzB/04Ls=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=

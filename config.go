@@ -2,8 +2,6 @@ package zdpgo_email
 
 // Config 配置类
 type Config struct {
-	Debug                bool   `yaml:"debug" json:"debug" env:"debug"`                       // 是否为debug模式                    // 是否为debug模式
-	LogFilePath          string `yaml:"log_file_path" json:"log_file_path"`                   // 日志文件路径
 	HeaderTagName        string `yaml:"header_tag_name" json:"header_tag_name"`               // 请求头标记名
 	HeaderTagValue       string `yaml:"header_tag_value" json:"header_tag_value"`             // 请求头标记值
 	CommonTitle          string `yaml:"common_title" json:"common_title"`                     // 通用邮件标题

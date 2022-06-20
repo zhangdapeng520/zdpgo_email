@@ -27,14 +27,14 @@ type Email struct {
 }
 
 // New 新建邮件对象，支持发送邮件和接收邮件
-func New() (email *Email, err error) {
-	return NewWithConfig(&Config{})
+func New(log *zdpgo_log.Log) (email *Email, err error) {
+	return NewWithConfig(&Config{}, log)
 }
 
 // NewWithConfig 根据配置文件，创建邮件对象
-func NewWithConfig(config *Config) (email *Email, err error) {
+func NewWithConfig(config *Config, log *zdpgo_log.Log) (email *Email, err error) {
 	email = &Email{}
-	email.Random = zdpgo_random.New()
+	email.Random = zdpgo_random.New(log)
 	email.Yaml = zdpgo_yaml.New()
 
 	// 日志对象
@@ -49,7 +49,7 @@ func NewWithConfig(config *Config) (email *Email, err error) {
 	if config.Debug {
 		logConfig.IsShowConsole = true
 	}
-	email.Log = zdpgo_log.NewWithConfig(logConfig)
+	email.Log = log
 	email.Log.Debug("创建email日志对象成功", "config", config)
 	gomail.Log = email.Log // 初始化gomail中的日志对象
 
