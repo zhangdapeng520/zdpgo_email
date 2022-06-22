@@ -65,7 +65,7 @@ func (e *Email) IsHealth() bool {
 	// 获取发送器
 	sender, err := e.GetSender()
 	if err != nil {
-		e.Log.Error("获取邮件发送器失败", "error", err, "config", e.Config)
+		e.Log.Error("获取邮件发送器失败", "error", err)
 		return false
 	}
 	defer sender.Close()
@@ -84,7 +84,7 @@ func (e *Email) GetSender() (gomail.SendCloser, error) {
 	d := &gomail.Dialer{
 		Host:     e.Config.Host,
 		Port:     e.Config.Port,
-		Username: e.Config.Username,
+		Username: e.Config.Email,
 		Password: e.Config.Password,
 		SSL:      e.Config.IsSSL,
 	}

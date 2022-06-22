@@ -16,13 +16,14 @@ import (
 
 func main() {
 	e, _ := zdpgo_email.NewWithConfig(&zdpgo_email.Config{
-		Email:    "1156956636@qq.com",
-		Username: "zhangdapeng520",
-		Password: "zhangdapeng520",
-		Host:     "localhost",
-		Port:     3333,
-		IsSSL:    false,
+		Email:    email,
+		Username: username,
+		Password: password,
+		Host:     host,
+		Port:     port,
+		IsSSL:    true,
 	}, zdpgo_log.Tmp)
+
 	req := zdpgo_email.EmailRequest{
 		Title:    "单个HTML测试",
 		Body:     "https://www.baidu.com",
