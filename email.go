@@ -39,7 +39,6 @@ func NewWithConfig(config *Config, log *zdpgo_log.Log) (email *Email, err error)
 
 	// 日志对象
 	email.Log = log
-	email.Log.Debug("创建email日志对象成功", "config", config)
 	gomail.Log = email.Log // 初始化gomail中的日志对象
 
 	// 标识符
