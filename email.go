@@ -10,7 +10,6 @@ package zdpgo_email
 import (
 	"embed"
 	"github.com/zhangdapeng520/zdpgo_email/gomail"
-	"github.com/zhangdapeng520/zdpgo_log"
 	"github.com/zhangdapeng520/zdpgo_random"
 	"github.com/zhangdapeng520/zdpgo_yaml"
 	"sync"
@@ -20,26 +19,21 @@ type Email struct {
 	Fs     *embed.FS // 嵌入的文件系统
 	Random *zdpgo_random.Random
 	Yaml   *zdpgo_yaml.Yaml
-	Log    *zdpgo_log.Log // 日志对象
-	Config *Config        // 配置对象
-	Result *EmailResult   // 邮件发送结果
-	Lock   sync.Mutex     // 同步锁
+	Config *Config      // 配置对象
+	Result *EmailResult // 邮件发送结果
+	Lock   sync.Mutex   // 同步锁
 }
 
 // New 新建邮件对象，支持发送邮件和接收邮件
-func New(log *zdpgo_log.Log) (email *Email, err error) {
-	return NewWithConfig(&Config{}, log)
+func New() (email *Email, err error) {
+	return NewWithConfig(&Config{})
 }
 
 // NewWithConfig 根据配置文件，创建邮件对象
-func NewWithConfig(config *Config, log *zdpgo_log.Log) (email *Email, err error) {
+func NewWithConfig(config *Config) (email *Email, err error) {
 	email = &Email{}
-	email.Random = zdpgo_random.New(log)
+	email.Random = zdpgo_random.New()
 	email.Yaml = zdpgo_yaml.New()
-
-	// 日志对象
-	email.Log = log
-	gomail.Log = email.Log // 初始化gomail中的日志对象
 
 	// 标识符
 	if config.HeaderTagName == "" {
@@ -64,13 +58,11 @@ func (e *Email) IsHealth() bool {
 	// 获取发送器
 	sender, err := e.GetSender()
 	if err != nil {
-		e.Log.Error("获取邮件发送器失败", "error", err)
 		return false
 	}
 	defer sender.Close()
 
 	if sender == nil {
-		e.Log.Error("邮件发送器为空", "sender", sender)
 		return false
 	}
 
@@ -91,7 +83,6 @@ func (e *Email) GetSender() (gomail.SendCloser, error) {
 	// 拨号
 	sender, err := d.Dial()
 	if err != nil {
-		e.Log.Error("获取发送对象失败", "error", err)
 		return nil, err
 	}
 

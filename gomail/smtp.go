@@ -43,7 +43,6 @@ func (d *Dialer) Dial() (sender SendCloser, err error) {
 	// 拨号并进行超时控制
 	conn, err = netDialTimeout("tcp", addr(d.Host, d.Port), 10*time.Second)
 	if err != nil {
-		Log.Error("拨号失败", "error", err)
 		return
 	}
 
@@ -55,7 +54,6 @@ func (d *Dialer) Dial() (sender SendCloser, err error) {
 	// 创建SMTP连接
 	c, err = smtpNewClient(conn, d.Host)
 	if err != nil {
-		Log.Error("创建SMTP连接失败", "error", err)
 		return
 	}
 
@@ -63,7 +61,6 @@ func (d *Dialer) Dial() (sender SendCloser, err error) {
 	if d.LocalName != "" {
 		// 使用SMTP连接打招呼，查看是否能通信
 		if err = c.Hello(d.LocalName); err != nil {
-			Log.Error("使用SMTP连接打招呼，查看是否能通信失败", "error", err, "localName", d.LocalName)
 			return
 		}
 	}

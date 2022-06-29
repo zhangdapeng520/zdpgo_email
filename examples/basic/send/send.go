@@ -21,7 +21,7 @@ func Send(e *zdpgo_email.Email) {
 	}
 	result, err := e.Send(req)
 	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
+		fmt.Println("发送邮件失败", "error", err)
 	}
 	fmt.Println(result.Title, result.SendStatus, result.Key, result.StartTime, result.EndTime)
 }

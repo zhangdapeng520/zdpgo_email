@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/zhangdapeng520/zdpgo_email"
-	"github.com/zhangdapeng520/zdpgo_log"
 )
 
 /*
@@ -22,7 +21,7 @@ func main() {
 		Host:     host,
 		Port:     port,
 		IsSSL:    true,
-	}, zdpgo_log.Tmp)
+	})
 
 	req := zdpgo_email.EmailRequest{
 		Title:    "单个HTML测试",
@@ -31,7 +30,7 @@ func main() {
 	}
 	result, err := e.Send(req)
 	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
+		fmt.Println(err)
 	}
 	fmt.Println(result.Title, result.SendStatus, result.Key, result.StartTime, result.EndTime)
 }

@@ -5,7 +5,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/zhangdapeng520/zdpgo_log"
 	"io"
 	"os"
 	"path/filepath"
@@ -24,7 +23,6 @@ type Message struct {
 	buf         bytes.Buffer
 	Fs          *embed.FS           // 嵌入文件系统
 	Readers     map[string]*os.File // 读取器列表
-	Log         *zdpgo_log.Log      // 日志对象
 }
 
 type header map[string][]string
@@ -59,13 +57,6 @@ func NewMessage(settings ...MessageSetting) *Message {
 func NewMessageWithFs(fs *embed.FS, settings ...MessageSetting) *Message {
 	m := NewMessage(settings...)
 	m.Fs = fs
-	return m
-}
-
-// NewMessageWithLog 使用日志对象创建消息对象
-func NewMessageWithLog(log *zdpgo_log.Log, settings ...MessageSetting) *Message {
-	m := NewMessage(settings...)
-	m.Log = log
 	return m
 }
 

@@ -23,11 +23,9 @@ func (e *Email) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
 		tagArr := strings.Split(tagKey, "-")
 		if len(tagArr) != 3 {
 			msg := "key必须由两个“-”分割的字符组成"
-			e.Log.Error("key必须由两个“-”分割的字符组成")
 			return errors.New(msg)
 		} else if tagArr[0] != "X" {
 			msg := "Key的第一个字符必须是大写的X"
-			e.Log.Error(msg)
 			return errors.New(msg)
 		}
 		e.Config.HeaderTagName = tagKey
@@ -42,7 +40,6 @@ func (e *Email) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
 	e.Result.Key = e.Config.HeaderTagValue
 	err := e.SendGoMail(req)
 	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
 		return err
 	}
 	return nil
@@ -103,9 +100,7 @@ func (e *Email) GetMessage(req EmailRequest) (*gomail.Message, error) {
 				m.AttachWithReaders(req.Files, file)
 			} else {
 				_, err := os.Stat(file) // 判断文件是否存在
-				if err != nil {
-					e.Log.Error("添加附件失败", "error", err, "file", file)
-				} else {
+				if err == nil {
 					m.Attach(file)
 				}
 			}
@@ -123,7 +118,6 @@ func (e *Email) SendGoMail(req EmailRequest) error {
 	// 创建消息对象
 	m, err := e.GetMessage(req)
 	if err != nil {
-		e.Log.Error("获取发送消息对象失败", "error", err)
 		return err
 	}
 
@@ -131,7 +125,7 @@ func (e *Email) SendGoMail(req EmailRequest) error {
 	err = e.SendEmailWithMessage(m)
 	e.Result.EndTime = int(time.Now().Unix())
 	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
+		return err
 	}
 	e.Result.SendStatus = true
 
@@ -144,20 +138,14 @@ func (e *Email) SendEmailWithMessage(message *gomail.Message) error {
 	// 获取邮件发送器
 	sender, err := e.GetSender()
 	if err != nil {
-		e.Log.Error("获取邮件发送器失败", "error", err)
 		return err
 	}
-	defer func(sender gomail.SendCloser) {
-		err = sender.Close()
-		if err != nil {
-			e.Log.Error("关闭邮件发送器失败", "error", err)
-		}
-	}(sender)
+	defer sender.Close()
 
 	// 发送邮件
 	err = gomail.Send(sender, message)
 	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
+		return err
 	}
 
 	return nil
@@ -171,7 +159,6 @@ func (e *Email) SendMany(reqList []EmailRequest) ([]EmailResult, error) {
 	for _, req := range reqList {
 		result, err := e.Send(req)
 		if err != nil {
-			e.Log.Error("发送邮件失败", "error", err, "req", req)
 			return nil, err
 		}
 		results = append(results, result)
@@ -218,10 +205,9 @@ func (e *Email) Send(req EmailRequest) (EmailResult, error) {
 
 	// 校验是否成功
 	if err != nil {
-		e.Log.Error("发送邮件失败", "error", err)
+		return *e.Result, err
 	} else {
 		e.Result.SendStatus = true
-		e.Log.Debug("发送邮件成功")
 	}
 
 	// 返回结果
