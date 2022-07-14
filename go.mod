@@ -1,9 +1,5 @@
 module github.com/zhangdapeng520/zdpgo_email
 
-go 1.17
+go 1.18
 
-require (
-	github.com/zhangdapeng520/zdpgo_random v1.2.0
-	github.com/zhangdapeng520/zdpgo_yaml v0.1.0
-	golang.org/x/text v0.3.7
-)
+require golang.org/x/text v0.3.7

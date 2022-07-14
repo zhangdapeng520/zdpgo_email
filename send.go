@@ -2,19 +2,12 @@ package zdpgo_email
 
 import (
 	"errors"
-	"github.com/zhangdapeng520/zdpgo_email/gomail"
 	"os"
 	"strings"
 	"time"
-)
 
-/*
-@Time : 2022/4/29 9:54
-@Author : 张大鹏
-@File : send.go
-@Software: Goland2021.3.1
-@Description:发送邮件相关的方法
-*/
+	"github.com/zhangdapeng520/zdpgo_email/gomail"
+)
 
 // SendWithTag 通过标签发送邮件
 func (e *Email) SendWithTag(tagKey, tagValue string, req EmailRequest) error {
@@ -189,7 +182,7 @@ func (e *Email) Send(req EmailRequest) (EmailResult, error) {
 		StartTime:   int(time.Now().Unix()),
 	}
 	if e.Result.Key == "" {
-		e.Result.Key = e.Random.Str(32)
+		e.Result.Key = RandomStr(32)
 	}
 
 	// 无法连接邮件服务器
@@ -198,7 +191,7 @@ func (e *Email) Send(req EmailRequest) (EmailResult, error) {
 	}
 
 	// 发送邮件
-	key := e.Random.Str(16)
+	key := RandomStr(16)
 	e.Result.Key = key
 	err := e.SendWithTag(e.Config.HeaderTagName, key, req)
 	e.Result.EndTime = int(time.Now().Unix())

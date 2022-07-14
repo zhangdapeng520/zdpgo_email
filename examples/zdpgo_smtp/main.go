@@ -2,16 +2,9 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/zhangdapeng520/zdpgo_email"
 )
-
-/*
-@Time : 2022/6/6 11:29
-@Author : 张大鹏
-@File : main.go
-@Software: Goland2021.3.1
-@Description:
-*/
 
 func main() {
 	e, _ := zdpgo_email.NewWithConfig(&zdpgo_email.Config{

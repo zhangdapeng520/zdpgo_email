@@ -1,7 +1,2 @@
-github.com/zhangdapeng520/zdpgo_random v1.2.0 h1:oOZpqb5jAnsUWZrs7tvO5XZ5krzmvtS5nkLpn+xj3XI=
-github.com/zhangdapeng520/zdpgo_random v1.2.0/go.mod h1:y+0kOD5LOGVbukBT+Acfr3Pym9V/dfZC/uGcrpfRhs0=
-github.com/zhangdapeng520/zdpgo_yaml v0.1.0 h1:tIbAnMXH/voigfAjNiclM4nlQcbZzutNlI5Jk+37tjE=
-github.com/zhangdapeng520/zdpgo_yaml v0.1.0/go.mod h1:bsPOffw0/qvTmaukVBeZe/Mvui9fxa9+0sbhzB/04Ls=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
-golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=

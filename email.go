@@ -9,16 +9,13 @@ package zdpgo_email
 */
 import (
 	"embed"
-	"github.com/zhangdapeng520/zdpgo_email/gomail"
-	"github.com/zhangdapeng520/zdpgo_random"
-	"github.com/zhangdapeng520/zdpgo_yaml"
 	"sync"
+
+	"github.com/zhangdapeng520/zdpgo_email/gomail"
 )
 
 type Email struct {
-	Fs     *embed.FS // 嵌入的文件系统
-	Random *zdpgo_random.Random
-	Yaml   *zdpgo_yaml.Yaml
+	Fs     *embed.FS    // 嵌入的文件系统
 	Config *Config      // 配置对象
 	Result *EmailResult // 邮件发送结果
 	Lock   sync.Mutex   // 同步锁
@@ -32,8 +29,6 @@ func New() (email *Email, err error) {
 // NewWithConfig 根据配置文件，创建邮件对象
 func NewWithConfig(config *Config) (email *Email, err error) {
 	email = &Email{}
-	email.Random = zdpgo_random.New()
-	email.Yaml = zdpgo_yaml.New()
 
 	// 标识符
 	if config.HeaderTagName == "" {
@@ -62,11 +57,7 @@ func (e *Email) IsHealth() bool {
 	}
 	defer sender.Close()
 
-	if sender == nil {
-		return false
-	}
-
-	return true
+	return sender != nil
 }
 
 // GetSender 获取发送对象

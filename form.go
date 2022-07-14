@@ -5,14 +5,6 @@ import (
 	"os"
 )
 
-/*
-@Time : 2022/5/11 20:23
-@Author : 张大鹏
-@File : form.go
-@Software: Goland2021.3.1
-@Description: email表单相关数据
-*/
-
 // EmailResult 邮件结果
 type EmailResult struct {
 	Key           string   `json:"key"`            // 唯一key

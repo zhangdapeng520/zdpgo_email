@@ -2,16 +2,9 @@ package send
 
 import (
 	"fmt"
+
 	"github.com/zhangdapeng520/zdpgo_email"
 )
-
-/*
-@Time : 2022/5/23 14:42
-@Author : 张大鹏
-@File : send.go
-@Software: Goland2021.3.1
-@Description:
-*/
 
 func Send(e *zdpgo_email.Email) {
 	req := zdpgo_email.EmailRequest{
